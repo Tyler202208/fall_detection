@@ -1,0 +1,129 @@
+Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            color: primary_color,
+            child: Column(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  backgroundImage: NetworkImage("https://images.ctfassets.net/oggad6svuzkv/5YoLpGXo6j1KA2YEzDCwpA/1dd135ecc891aa5ae6488338f759120e/Guy_Persaud.jpg.png"),
+                  radius: 40,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Margaret Johnson",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25
+
+                  ),
+
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Age 72",
+                      style: textcard_color
+                    ),
+                    SizedBox(width: 10),
+                    CircleAvatar(
+                      backgroundColor: Colors.white,
+                      radius: 2,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "Fall Detection User",
+                      style: textcard_color
+                    )
+                  ],
+                ),
+                SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Number_word(
+                      number: "3",
+                      text: "Emergency",
+                      optional_text: "Contacts"
+                    ),
+                    Number_word(
+                      number: "24/7",
+                      text: "Monitoring"
+                    ),
+                    Number_word(
+                      number: "0",
+                      text: "Falls",
+                      optional_text: "Detected"
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
+                  child: Text(
+                    "Personal Information",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ExpansionTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.grey.withOpacity(0.3),
+              radius: 30,
+              child: Icon(
+                Icons.person,
+                size: 30,
+                color: Colors.blue,
+              ),
+            ),
+            title: Text('Name'),
+            subtitle: Text('Margaret Johnson'),
+          ),
+          ExpansionTile(
+            leading:  CircleAvatar(
+              backgroundColor: Colors.grey.withOpacity(0.3),
+              radius: 30,
+              child: Icon(
+                Icons.cake,
+                size: 30,
+                color: Colors.green,
+              ),
+            ),
+            title: Text('Age'),
+            subtitle: Text('72 years old'),
+          ),
+          ExpansionTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.grey.withOpacity(0.3),
+              radius: 30,
+              child: Icon(
+                Icons.location_on,
+                size: 30,
+                color: Colors.purple,
+              ),
+            ),
+            title: Text('Address'),
+            subtitle: Text('123 Oak Street, City'),
+          )
+
+
+        ],
+      )
