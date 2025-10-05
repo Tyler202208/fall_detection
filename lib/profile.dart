@@ -93,6 +93,7 @@ class _ProfileState extends State<Profile> {
         await user?.reauthenticateWithCredential(credential);
         await user?.delete();
         await FirebaseFirestore.instance.collection("Users").doc(user.uid).delete();
+        Navigator.pushReplacementNamed(context, "/login");
       }
       catch (e){
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,8 +146,20 @@ class _ProfileState extends State<Profile> {
             else if (snapshot.hasError){
               return Center(child: Text("Failed to Connect to Firebase"));
             }
-            final user_data = snapshot.data!.data() as Map<String, dynamic>;
-            final user_name = user_data["name"] ?? "Name Not Found";
+
+            // TODO: Fix null issue when delete
+
+            final user_data;
+            var user_name;
+
+            try{
+              user_data = snapshot.data!.data() as Map<String, dynamic>;
+              user_name = user_data["name"] ;
+            }
+            catch (e){
+              user_name = "";
+            }
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

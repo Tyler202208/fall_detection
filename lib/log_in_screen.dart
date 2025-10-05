@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:senior_fall_detection/constants.dart';
 
 class LogInScreen extends StatefulWidget {
   const LogInScreen({super.key});
@@ -55,10 +56,11 @@ class _LogInScreenState extends State<LogInScreen> {
               key: _formKey,
               child: Column(
                   children: [
+                    Image.asset('assets/fall_detection_logo.png'),
                     Text(
                       "Senior Fall Detection",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
                         fontFamily: ""
                       )
@@ -68,7 +70,7 @@ class _LogInScreenState extends State<LogInScreen> {
                       margin: EdgeInsets.symmetric(horizontal: 12),
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.4),
+                          color: card_color,
                           borderRadius: BorderRadius.circular(15)
                       ),
                       child: TextFormField(
@@ -82,7 +84,7 @@ class _LogInScreenState extends State<LogInScreen> {
                       margin: EdgeInsets.symmetric(horizontal: 12),
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.4),
+                          color: card_color,
                           borderRadius: BorderRadius.circular(15)
                       ),
                       child: TextFormField(
@@ -97,7 +99,13 @@ class _LogInScreenState extends State<LogInScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _isloading ? null : _submit,
-                        child: _isloading ? CircularProgressIndicator() : Text("Log In"),
+                        child: _isloading ? CircularProgressIndicator() : Text(
+                            "Log In",
+                          style: TextStyle(
+                            color: primary_color,
+                            fontSize: 20
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(height: 16),
@@ -106,9 +114,17 @@ class _LogInScreenState extends State<LogInScreen> {
                           Navigator.pushReplacementNamed(context, '/signup');
                         },
                         child: Text(
-                          "Click Here to Create an Account"
+                          "Click Here to Create an Account",
+                          style: TextStyle(
+                            color: primary_color,
+                            fontSize: 16
+                          ),
                         )
-                    )
+                    ),
+                    if(_error != null) ...[
+                      Text(_error!),
+                      SizedBox(height: 16)
+                    ],
                   ]
               )
           )

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:battery_plus/battery_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,6 +11,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  late List<ConnectivityResult> connectivityResult;
+  late var isMobileConnected = false;
+  var battery = Battery();
+  int getBattery = 0;
+
+
+  @override
+  Future<void> initState() async {
+    super.initState();
+    checkConnection();
+    getBattery = await getBatteryLevel();
+  }
+  Future<void> checkConnection() async {
+    connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult.contains(ConnectivityResult.mobile)) {
+
+      setState(() {
+        isMobileConnected = true;
+      });
+    }
+  }
+
+  Future<int> getBatteryLevel() async {
+    int battery_level = await battery.batteryLevel;
+    print(battery_level);
+    return battery_level;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,12 +191,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SensorRowItem(
                         text: 'Wifi Connection',
-                        icon: Icon(
-                          Icons.wifi,
-                          color: primary_color,
-                          size: 30,
-                        ),
-                        trailing: "Strong"
+                        icon: isMobileConnected?
+                          Icon(
+                            Icons.wifi,
+                            color: primary_color,
+                            size: 30,
+                          ):
+                          Icon(
+                            Icons.wifi_1_bar,
+                            color: Colors.red,
+                            size: 30
+                          ) ,
+                        trailing: isMobileConnected?
+                            "Strong":
+                            "Weak"
                     ),
                     SensorRowItem(
                         text: "Battery Level",
@@ -174,16 +213,24 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.green,
                           size: 30,
                         ),
-                        trailing: "85%"
+                        trailing: getBattery.toString()
                     ),
                     SensorRowItem(
-                        text: "Signal Strength",
-                        icon: Icon(
+                        text: 'Signal Strength',
+                        icon: isMobileConnected?
+                        Icon(
                           Icons.signal_cellular_alt,
                           color: primary_color,
                           size: 30,
-                        ),
-                        trailing: "Excellent"
+                        ):
+                        Icon(
+                            Icons.signal_cellular_alt_1_bar,
+                            color: Colors.red,
+                            size: 30
+                        ) ,
+                        trailing: isMobileConnected?
+                        "Strong":
+                        "Weak"
                     )
 
                   ],
@@ -233,3 +280,4 @@ class SensorRowItem extends StatelessWidget {
     );
   }
 }
+

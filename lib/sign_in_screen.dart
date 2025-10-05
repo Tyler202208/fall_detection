@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:senior_fall_detection/constants.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -68,43 +69,103 @@ class _SignUpScreenState extends State<SignUpScreen> {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: "Name"),
-                validator: (value) => value == null || value.isEmpty ? 'Enter a valid name' : null,
+              Image.asset('assets/fall_detection_logo.png'),
+              Text(
+                  "Senior Fall Detection",
+                  style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: ""
+                  )
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                    color: card_color,
+                    borderRadius: BorderRadius.circular(15)
+                ),
+                child: TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: "Name"),
+                  validator: (value) => value == null || value.isEmpty ? 'Enter a valid name' : null,
+                ),
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: "Email"),
-                validator: (value) => value == null || !value.contains("@") ? 'Enter a valid email' : null,
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                    color: card_color,
+                    borderRadius: BorderRadius.circular(15)
+                ),
+                child: TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: "Email"),
+                  validator: (value) => value == null || !value.contains("@") ? 'Enter a valid email' : null,
+                ),
+              ),
+
+              SizedBox(height: 16),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                    color: card_color,
+                    borderRadius: BorderRadius.circular(15)
+                ),
+                child: TextFormField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(labelText: "Password"),
+                  validator: (value) => value == null || value.length < 5 ? 'Enter a 5+ character password' : null,
+                  obscureText: true,
+                ),
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: "Password"),
-                validator: (value) => value == null || value.length < 5 ? 'Enter a 5+ character password' : null,
-                obscureText: true,
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 12),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                    color: card_color,
+                    borderRadius: BorderRadius.circular(15)
+                ),
+                child: TextFormField(
+                  controller: _confirmPassword,
+                  decoration: const InputDecoration(labelText: "Confirm Password"),
+                  validator: (value) => value == null || value != _passwordController.text ? 'Password do not match' : null,
+                  obscureText: true,
+                ),
               ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _confirmPassword,
-                decoration: const InputDecoration(labelText: "Confirm Password"),
-                validator: (value) => value == null || value != _passwordController.text ? 'Password do not match' : null,
-                obscureText: true,
-              ),
-              if(_error != null) ...[
-                Text(_error!),
-                SizedBox(height: 16)
-              ],
               SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                     onPressed: _isloading ? null : _submit,
-                    child: _isloading ? CircularProgressIndicator() : Text("Sign up"),
+                    child: _isloading ? CircularProgressIndicator() : Text(
+                      "Sign up",
+                      style: TextStyle(
+                        color: primary_color,
+                        fontSize: 20
+                      ),
+                    ),
                 ),
               ),
+              TextButton(
+                  onPressed: (){
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: Text(
+                    "Click Here to Return to Login",
+                    style: TextStyle(
+                      color: primary_color,
+                      fontSize: 16
+                    ),
+                  )
+              ),
+              if(_error != null) ...[
+                Text(_error!),
+                SizedBox(height: 16)
+              ],
             ],
           ),
         ),
