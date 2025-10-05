@@ -19,10 +19,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   @override
-  Future<void> initState() async {
+  void initState()  {
     super.initState();
     checkConnection();
-    getBattery = await getBatteryLevel();
+    getBatteryLevel();
   }
   Future<void> checkConnection() async {
     connectivityResult = await (Connectivity().checkConnectivity());
@@ -34,10 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<int> getBatteryLevel() async {
-    int battery_level = await battery.batteryLevel;
-    print(battery_level);
-    return battery_level;
+  Future<void> getBatteryLevel() async {
+    getBattery = await battery.batteryLevel;
+    print(getBattery);
   }
 
   @override
