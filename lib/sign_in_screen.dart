@@ -45,7 +45,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             }
           );
         }
-        Navigator.pushReplacementNamed(context, "/home");
+        Navigator.pushReplacementNamed(context, "/personal_info");
       }
       catch(e){
         setState(() {

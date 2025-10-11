@@ -257,7 +257,7 @@ class _ProfileState extends State<Profile> {
                     ),
                   ),
                   title: Text('Name'),
-                  subtitle: Text('Margaret Johnson'),
+                  subtitle: Text(user_name),
                 ),
                 ExpansionTile(
                   leading:  CircleAvatar(

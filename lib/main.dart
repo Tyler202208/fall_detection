@@ -3,6 +3,7 @@ import 'package:senior_fall_detection/home_screen.dart';
 import 'package:senior_fall_detection/log_in_screen.dart';
 import 'package:senior_fall_detection/navigation_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:senior_fall_detection/personal_info_screen.dart';
 import 'package:senior_fall_detection/sign_in_screen.dart';
 import 'package:senior_fall_detection/splash_screen.dart';
 import 'firebase_options.dart';
@@ -32,7 +33,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => SplashScreen(),
         '/home': (context) => NavigationScreen(),
         '/signup': (context) => SignUpScreen(),
-        '/login': (context) => LogInScreen()
+        '/login': (context) => LogInScreen(),
+        '/person_info': (context) => PersonalInfoScreen(),
 
       },
 
