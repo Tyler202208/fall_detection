@@ -13,10 +13,23 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   final _addressController = TextEditingController();
   final _contactname = TextEditingController();
   final _contactnumber = TextEditingController();
+  int _page = 0;
+  late final List <Widget> _screens = [_page1(), _page2(), _page3()];
+
+  void _onHorizontalDrag(DragEndDetails details) {
+    if (details.primaryVelocity! < 0) {
+      setState(() => _page = (_page + 1).clamp(0, _screens.length - 1));
+    } else if (details.primaryVelocity! > 0) {
+      setState(() => _page = (_page - 1).clamp(0, _screens.length - 1));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return _page3();
+    return GestureDetector(
+      onHorizontalDragEnd: _onHorizontalDrag,
+      child: _screens[_page],
+    );
   }
 
 
@@ -199,15 +212,41 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
               validator: (value) => value != null  ? null : 'Enter a valid number',
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 30),
           Container(
+            margin: EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
             ),
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              decoration: BoxDecoration(
+                color: primary_color,
+                borderRadius: BorderRadius.circular(15)
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: Text(
+                    "Submit",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold
+
+                    ),
+                ),
+              ),
+            ),
 
           ),
-          three_dots(dot2: true),
+          SizedBox(height: 30),
+          Spacer(
+            flex: 3
+          ),
+          three_dots(dot3: true),
           Spacer(
             flex: 1,
           )
