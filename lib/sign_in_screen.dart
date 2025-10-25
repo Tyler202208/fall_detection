@@ -41,7 +41,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
             {
               "name": _nameController.text.trim(),
               "email": _emailController.text.trim(),
-              "createdAt": FieldValue.serverTimestamp()
+              "createdAt": FieldValue.serverTimestamp(),
+              "alertsToday": 0,
             }
           );
         }

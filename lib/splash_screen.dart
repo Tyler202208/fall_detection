@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacementNamed(context, "/home");
     }
     else {
-      Navigator.pushReplacementNamed(context, "/personal_info");
+      Navigator.pushReplacementNamed(context, "/login");
     }
   }
 

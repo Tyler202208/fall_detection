@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
 
@@ -13,8 +15,57 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   final _addressController = TextEditingController();
   final _contactname = TextEditingController();
   final _contactnumber = TextEditingController();
+  String _errorMessage = ""; //TODO: fix this
   int _page = 0;
   late final List <Widget> _screens = [_page1(), _page2(), _page3()];
+
+  bool _validateControllers(){
+    List <TextEditingController> _listControllers = [
+      _ageController, 
+      _addressController,
+      _contactname,
+      _contactnumber
+    ];
+    for(var controller in _listControllers){
+      final text = controller.text.trim();
+      if (text.isEmpty) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  Future<void> _verifyFields() async {
+    if (_validateControllers()) {
+
+      // Todo: Save data on firestore database
+      final user = FirebaseAuth.instance.currentUser;
+
+        await FirebaseFirestore.instance.collection("Users").doc(user?.uid).update(
+            {
+              // "name": _nameController.text.trim(),
+              // "email": _emailController.text.trim(),
+              // "createdAt": FieldValue.serverTimestamp()
+              "age": _ageController.text.trim(),
+              "address": _addressController.text.trim(),
+              "emergency_contacts": [
+                {
+                  "contact_name": _contactname.text.trim(),
+                  "contact_number": _contactnumber.text.trim()
+                }
+              ]
+            }
+        );
+      Navigator.pushReplacementNamed(context, "/home");
+
+    }
+    else{
+      setState(() {
+        _errorMessage = "Please fill in all fields";
+        print("verify fields");
+      });
+    }
+  }
 
   void _onHorizontalDrag(DragEndDetails details) {
     if (details.primaryVelocity! < 0) {
@@ -26,9 +77,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragEnd: _onHorizontalDrag,
-      child: _screens[_page],
+    return Scaffold(
+      body: GestureDetector(
+        onHorizontalDragEnd: _onHorizontalDrag,
+        child: _screens[_page],
+      ),
     );
   }
 
@@ -213,36 +266,48 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             ),
           ),
           SizedBox(height: 30),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-            ),
+          GestureDetector(
+            onTap: _verifyFields,
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              margin: EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: primary_color,
-                borderRadius: BorderRadius.circular(15)
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                    "Submit",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                decoration: BoxDecoration(
+                  color: primary_color,
+                  borderRadius: BorderRadius.circular(15)
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                      "Submit",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold
 
-                    ),
+                      ),
+                  ),
                 ),
               ),
-            ),
 
+            ),
           ),
           SizedBox(height: 30),
+          if (_errorMessage.isNotEmpty)...[
+            Text(
+              _errorMessage,
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 30
+              ),
+            ),
+          ],
           Spacer(
             flex: 3
           ),

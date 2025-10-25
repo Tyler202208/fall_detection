@@ -135,162 +135,196 @@ class _ProfileState extends State<Profile> {
             ),
           ],
         ),
-      body: StreamBuilder <DocumentSnapshot>(
-          stream: FirebaseFirestore.instance.collection("Users").doc(uid).snapshots(),
-          builder: (context, snapshot){
-            if (snapshot.connectionState == ConnectionState.waiting){
-              return Center(
-                  child: CircularProgressIndicator()
-              );
-            }
-            else if (snapshot.hasError){
-              return Center(child: Text("Failed to Connect to Firebase"));
-            }
+      body: SingleChildScrollView(
+        child: StreamBuilder <DocumentSnapshot>(
+            stream: FirebaseFirestore.instance.collection("Users").doc(uid).snapshots(),
+            builder: (context, snapshot){
+              if (snapshot.connectionState == ConnectionState.waiting){
+                return Center(
+                    child: CircularProgressIndicator()
+                );
+              }
+              else if (snapshot.hasError){
+                return Center(child: Text("Failed to Connect to Firebase"));
+              }
 
-            // TODO: Fix null issue when delete
+              // TODO: Connected to firebase, and get all field values
 
-            final user_data;
-            var user_name;
+              final user_data;
+              var user_name;
+              var user_age;
+              var user_address;
+              var user_emergencyContacts;
 
-            try{
-              user_data = snapshot.data!.data() as Map<String, dynamic>;
-              user_name = user_data["name"] ;
-            }
-            catch (e){
-              user_name = "";
-            }
+              try{
+                user_data = snapshot.data!.data() as Map<String, dynamic>;
+                user_name = user_data["name"];
+                user_age = user_data["age"];
+                user_address = user_data["address"];
+                user_emergencyContacts = user_data["emergency_contacts"];
+              }
+              catch (e){
+                user_name = "";
+                user_age = "";
+                user_address = "";
+                user_emergencyContacts = "";
+              }
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: primary_color,
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        backgroundImage: NetworkImage("https://images.ctfassets.net/oggad6svuzkv/5YoLpGXo6j1KA2YEzDCwpA/1dd135ecc891aa5ae6488338f759120e/Guy_Persaud.jpg.png"),
-                        radius: 40,
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        user_name,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 25
+              //TODO: Use fields in blueprint (my UI)
 
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    color: primary_color,
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Colors.white.withOpacity(0.2),
+                          backgroundImage: NetworkImage("https://images.ctfassets.net/oggad6svuzkv/5YoLpGXo6j1KA2YEzDCwpA/1dd135ecc891aa5ae6488338f759120e/Guy_Persaud.jpg.png"),
+                          radius: 40,
                         ),
-
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                              "Age 72",
-                              style: textcard_color
-                          ),
-                          SizedBox(width: 10),
-                          CircleAvatar(
-                            backgroundColor: Colors.white,
-                            radius: 2,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                              "Fall Detection User",
-                              style: textcard_color
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 15),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Number_word(
-                              number: "3",
-                              text: "Emergency",
-                              optional_text: "Contacts"
-                          ),
-                          Number_word(
-                              number: "24/7",
-                              text: "Monitoring"
-                          ),
-                          Number_word(
-                              number: "0",
-                              text: "Falls",
-                              optional_text: "Detected"
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
-                        child: Text(
-                          "Personal Information",
+                        SizedBox(height: 10),
+                        Text(
+                          user_name,
                           style: TextStyle(
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 20
+                              fontSize: 25
+
+                          ),
+
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                                "Age $user_age",
+                                style: textcard_color
+                            ),
+                            SizedBox(width: 10),
+                            CircleAvatar(
+                              backgroundColor: Colors.white,
+                              radius: 2,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                                "Fall Detection User",
+                                style: textcard_color
+                            )
+                          ],
+                        ),
+                        SizedBox(height: 15),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Number_word(
+                                number: user_emergencyContacts.length.toString(),
+                                text: "Emergency",
+                                optional_text: "Contacts"
+                            ),
+                            Number_word(
+                                number: "24/7",
+                                text: "Monitoring"
+                            ),
+                            Number_word(
+                                number: "0",
+                                text: "Falls",
+                                optional_text: "Detected"
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
+                          child: Text(
+                            "Personal Information",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                  ExpansionTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.grey.withOpacity(0.3),
+                      radius: 30,
+                      child: Icon(
+                        Icons.person,
+                        size: 30,
+                        color: Colors.blue,
                       ),
-                    ],
+                    ),
+                    title: Text('Name'),
+                    subtitle: Text(user_name),
                   ),
-                ),
-                ExpansionTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.grey.withOpacity(0.3),
-                    radius: 30,
-                    child: Icon(
-                      Icons.person,
-                      size: 30,
-                      color: Colors.blue,
+                  ExpansionTile(
+                    leading:  CircleAvatar(
+                      backgroundColor: Colors.grey.withOpacity(0.3),
+                      radius: 30,
+                      child: Icon(
+                        Icons.cake,
+                        size: 30,
+                        color: Colors.green,
+                      ),
+                    ),
+                    title: Text('Age'),
+                    subtitle: Text('$user_age years old'),
+                  ),
+                  ExpansionTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.grey.withOpacity(0.3),
+                      radius: 30,
+                      child: Icon(
+                        Icons.location_on,
+                        size: 30,
+                        color: Colors.purple,
+                      ),
+                    ),
+                    title: Text('Address'),
+                    subtitle: Text(user_address.toString()),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Text(
+                        "Emergency Contacts",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                        ),
                     ),
                   ),
-                  title: Text('Name'),
-                  subtitle: Text(user_name),
-                ),
-                ExpansionTile(
-                  leading:  CircleAvatar(
-                    backgroundColor: Colors.grey.withOpacity(0.3),
-                    radius: 30,
-                    child: Icon(
-                      Icons.cake,
-                      size: 30,
-                      color: Colors.green,
-                    ),
-                  ),
-                  title: Text('Age'),
-                  subtitle: Text('72 years old'),
-                ),
-                ExpansionTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.grey.withOpacity(0.3),
-                    radius: 30,
-                    child: Icon(
-                      Icons.location_on,
-                      size: 30,
-                      color: Colors.purple,
-                    ),
-                  ),
-                  title: Text('Address'),
-                  subtitle: Text('123 Oak Street, City'),
-                )
+                  ...user_emergencyContacts.map(
+                      (item) =>  Card(
+                        color: card_color,
+                        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        child: ListTile(
+                            title: Text(item["contact_name"]),
+                            subtitle: Text(item["contact_number"]),
+
+                        ),
+                      ),
+                  ).toList()
 
 
-              ],
-            );
+                ],
+              );
 
-          }
+            }
+        ),
       )
     );
   }

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -16,6 +18,10 @@ class _HomeScreenState extends State<HomeScreen> {
   late var isMobileConnected = false;
   var battery = Battery();
   int getBattery = 0;
+  bool isDeviceConnected = false;
+  int totalAlerts = -1;
+  final uid = FirebaseAuth.instance.currentUser!.uid;
+
 
 
   @override
@@ -39,6 +45,16 @@ class _HomeScreenState extends State<HomeScreen> {
     print(getBattery);
   }
 
+
+  //TODO: Assume you've added to total alerts
+  Future <void> userHasFallen() async {
+    await FirebaseFirestore.instance.collection("Users").doc(uid).update(
+        {
+          "alertsToday": totalAlerts,
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 20,
                 color: Colors.grey
-                    
+
               )
             ),
             Container(
@@ -78,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                       Text(
-                          "System Active",
+                          isDeviceConnected? "System Active": "System Offline",
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -86,7 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                       ),
                       CircleAvatar(
-                        backgroundColor: Colors.green.withOpacity(0.7),
+                        backgroundColor:
+                        isDeviceConnected? Colors.green.withOpacity(0.7): Colors.red.withOpacity(0.7),
                         radius: 10,
                       )
                     ]
@@ -117,13 +134,40 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Column(
                         children: [
-                          Text(
-                            "0",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20
-                            ),
+                          StreamBuilder(
+                            stream: FirebaseFirestore.instance.collection("Users").doc(uid).snapshots(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Center(
+                                      child: CircularProgressIndicator()
+                                  );
+                                }
+                                else if (snapshot.hasError) {
+                                  return Center(child: Text(
+                                      "Failed to Connect to Firebase"));
+                                }
+                                final user_data;
+                                var alertsToday;
+
+                                try{
+                                  user_data = snapshot.data!.data() as Map<String, dynamic>;
+                                  alertsToday = user_data["alertsToday"];
+                                  totalAlerts = alertsToday;
+
+                                }
+                                catch (e){
+                                  alertsToday = 0;
+                                }
+                                return Text(
+                                  "$alertsToday",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20
+                                  ),
+                                );
+                              }
                           ),
                           Text(
                             "Alerts Today",
@@ -153,7 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
               padding: EdgeInsets.all(15),
-                
+
                 decoration: BoxDecoration(
                   color: card_color,
                   borderRadius: BorderRadius.circular(15)
