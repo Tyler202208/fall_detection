@@ -17,10 +17,11 @@ class _HomeScreenState extends State<HomeScreen> {
   late List<ConnectivityResult> connectivityResult;
   late var isMobileConnected = false;
   var battery = Battery();
-  int getBattery = 0;
-  bool isDeviceConnected = false;
+  int getBattery = 100;
+  bool isDeviceConnected = true;
   int totalAlerts = -1;
   final uid = FirebaseAuth.instance.currentUser!.uid;
+  bool getAlert = false;
 
 
 
@@ -59,7 +60,65 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: getAlert?
+            Column(
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                  margin: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                  decoration: BoxDecoration(
+                    color: Colors.red, borderRadius: BorderRadius.circular(15)
+                  ),
+                  width: double.infinity,
+                  height: 750,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "FALL DETECTED!",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 60,
+                          fontWeight: FontWeight.bold
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                            onPressed: (){},
+                            child: Text(
+                              "Call Relative",
+                              style: TextStyle(
+                                color: Color(0xFF4C4B63),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 25
+                              )
+                            )
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                            onPressed: (){},
+                            child: Text(
+                                "Stop Alert",
+                                style: TextStyle(
+                                  color: Color(0xFF4C4B63),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 25
+                                )
+                            )
+                        ),
+                      )
+                    ],
+                  ),
+
+                )
+              ],
+            )
+        :Column(
           children: [
             Text(
               "Fall Detection",
@@ -234,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SensorRowItem(
                         text: 'Wifi Connection',
-                        icon: isMobileConnected?
+                        icon: !isMobileConnected?
                           Icon(
                             Icons.wifi,
                             color: primary_color,
@@ -245,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.red,
                             size: 30
                           ) ,
-                        trailing: isMobileConnected?
+                        trailing: !isMobileConnected?
                             "Strong":
                             "Weak"
                     ),
@@ -260,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SensorRowItem(
                         text: 'Signal Strength',
-                        icon: isMobileConnected?
+                        icon: !isMobileConnected?
                         Icon(
                           Icons.signal_cellular_alt,
                           color: primary_color,
@@ -271,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: Colors.red,
                             size: 30
                         ) ,
-                        trailing: isMobileConnected?
+                        trailing: !isMobileConnected?
                         "Strong":
                         "Weak"
                     )
