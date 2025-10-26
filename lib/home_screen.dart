@@ -4,6 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:async';
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDeviceConnected = false;
   int totalAlerts = -1;
   final uid = FirebaseAuth.instance.currentUser!.uid;
+
 
 
 
