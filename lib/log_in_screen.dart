@@ -58,7 +58,7 @@ class _LogInScreenState extends State<LogInScreen> {
                   children: [
                     Image.asset('assets/fall_detection_logo.png'),
                     Text(
-                      "Senior Fall Detection",
+                      "SafeStep",
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,

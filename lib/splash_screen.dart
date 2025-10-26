@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
               height: 196,
               child: Text(
                 textAlign: TextAlign.center,
-                "Elder Fall Detector",
+                "SafeStep",
                 style: TextStyle(
                   color: primary_color,
                   fontSize: 40,

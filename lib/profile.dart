@@ -12,6 +12,8 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
 
+  bool fallDetected = false;
+
   Future<String> _promptForPassword() async{
     String password = "";
     final _passwordController = TextEditingController();
@@ -182,7 +184,7 @@ class _ProfileState extends State<Profile> {
                       children: [
                         CircleAvatar(
                           backgroundColor: Colors.white.withOpacity(0.2),
-                          backgroundImage: NetworkImage("https://images.ctfassets.net/oggad6svuzkv/5YoLpGXo6j1KA2YEzDCwpA/1dd135ecc891aa5ae6488338f759120e/Guy_Persaud.jpg.png"),
+                          backgroundImage: NetworkImage("https://icon-library.com/images/anonymous-avatar-icon/anonymous-avatar-icon-25.jpg"),
                           radius: 40,
                         ),
                         SizedBox(height: 10),
@@ -229,7 +231,7 @@ class _ProfileState extends State<Profile> {
                                 text: "Monitoring"
                             ),
                             Number_word(
-                                number: "0",
+                                number: fallDetected? "1": "0",
                                 text: "Falls",
                                 optional_text: "Detected"
                             ),
