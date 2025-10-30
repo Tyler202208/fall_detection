@@ -12,7 +12,7 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
 
-  bool fallDetected = false;
+  bool fallDetected = true;
 
   Future<String> _promptForPassword() async{
     String password = "";

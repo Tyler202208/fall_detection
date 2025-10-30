@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDeviceConnected = true;
   int totalAlerts = -1;
   final uid = FirebaseAuth.instance.currentUser!.uid;
-  bool getAlert = false;
+  bool getAlert = true;
 
 
 
