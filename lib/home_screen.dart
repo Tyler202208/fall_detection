@@ -10,14 +10,19 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'dart:convert';
 
+import 'bluetooth.dart';
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+
+  final Bluetooth bluetoothManager;
+  const HomeScreen({super.key, required this.bluetoothManager});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
 
   late List<ConnectivityResult> connectivityResult;
   late var isMobileConnected = false;
@@ -26,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDeviceConnected = false;
   int totalAlerts = -1;
   final uid = FirebaseAuth.instance.currentUser!.uid;
+  Bluetooth get manager => widget.bluetoothManager;
 
 
 
@@ -35,7 +41,38 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     checkConnection();
     getBatteryLevel();
+    manager.requestPermissions();
+
+    manager.onDataReceived.listen((message) {
+      if (message == "FALL DETECTED!") {
+        _showFallAlert();
+      }
+    });
   }
+
+  void _showFallAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Colors.red, size: 30),
+            SizedBox(width: 10),
+            Text('FALL DETECTED!'),
+          ],
+        ),
+        content: const Text('A fall has been detected by the sensor.'),
+        backgroundColor: Colors.red[50],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> checkConnection() async {
     connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult.contains(ConnectivityResult.mobile)) {
@@ -100,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                       Text(
-                          isDeviceConnected? "System Active": "System Offline",
+                          manager.isConnected? "System Active": "System Offline",
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -109,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       CircleAvatar(
                         backgroundColor:
-                        isDeviceConnected? Colors.green.withOpacity(0.7): Colors.red.withOpacity(0.7),
+                        manager.isConnected? Colors.green.withOpacity(0.7): Colors.red.withOpacity(0.7),
                         radius: 10,
                       )
                     ]
@@ -225,14 +262,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
-                                color: Colors.lightGreen.withOpacity(0.4),
+                                color: manager.isConnected? Colors.lightGreen.withOpacity(0.4) : Colors.red.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(15)
                             ),
                             child: Text(
-                              "Connected",
+                              manager.isConnected? "Connected": "Disconnected",
                               style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.green[900]
+                                fontSize: 15,
+                                color:
+                                Colors.green[900]
                               ),
                             ),
                           )
@@ -284,6 +322,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   ],
                 )
+            ),
+            SizedBox(height: 20,),
+
+            Text(
+              manager.isConnected? "Connected" : "Not Connected",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 25,
+                fontWeight: FontWeight.bold
+              ),
+            ),
+
+            CircleAvatar(
+              backgroundColor: Colors.grey.withOpacity(0.3),
+              radius: 80,
+              child: Icon(
+                  manager.isConnected? Icons.bluetooth:Icons.bluetooth_disabled,
+                  color: Colors.black,
+                  size: 80,
+              ),
             )
 
           ],
