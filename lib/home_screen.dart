@@ -98,6 +98,51 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void scanPopup (var results){
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Device Connected'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              if (manager.scanResults.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text('Available Devices:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                ...manager.scanResults.map((result) => Card(
+                  child: ListTile(
+                    title: Text(result.device.platformName.isNotEmpty
+                        ? result.device.platformName
+                        : result.advertisementData.advName),
+                    subtitle: Text(result.device.remoteId.toString()),
+                    trailing: ElevatedButton(
+                      onPressed: () async {
+                        await manager.connectToDevice(result.device, () {
+                          setState(() {});
+                        });
+                        setState(() {});
+                      },
+                      child: const Text('Connect'),
+                    ),
+                  ),
+                )),
+              ],
+
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -334,13 +379,25 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            CircleAvatar(
-              backgroundColor: Colors.grey.withOpacity(0.3),
-              radius: 80,
-              child: Icon(
-                  manager.isConnected? Icons.bluetooth:Icons.bluetooth_disabled,
-                  color: Colors.black,
-                  size: 80,
+            GestureDetector(
+              onTap: manager.isConnected
+                  ? null
+                  : () async {
+                await manager.startScan((results) {
+                  setState(() {
+
+                  });
+                  scanPopup(results);
+                });
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.grey.withOpacity(0.3),
+                radius: 80,
+                child: Icon(
+                    manager.isConnected? Icons.bluetooth:Icons.bluetooth_disabled,
+                    color: Colors.black,
+                    size: 80,
+                ),
               ),
             )
 
