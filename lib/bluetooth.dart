@@ -44,26 +44,31 @@ class Bluetooth {
     scanResults.clear();
 
     try {
+      BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
+      if (state != BluetoothAdapterState.on) {
+        debugPrint('Bluetooth is OFF. Prompting user to turn it on.');
+        throw Exception('Bluetooth is OFF');
+      }
+
       await FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
 
       FlutterBluePlus.scanResults.listen((results) {
-          scanResults = results.where((result) =>
-          result.device.platformName.isNotEmpty &&
-              (result.device.platformName.contains('FallDetector') ||
-                  result.advertisementData.advName.contains('FallDetector'))
-          ).toList();
+        scanResults = results.where((result) =>
+        result.device.platformName.isNotEmpty &&
+            (result.device.platformName.contains('FallDetector') ||
+                result.advertisementData.advName.contains('FallDetector'))
+        ).toList();
 
-          onResultsUpdated(scanResults);
+        onResultsUpdated(scanResults);
       });
 
       await Future.delayed(const Duration(seconds: 10));
       await FlutterBluePlus.stopScan();
     } catch (e) {
       debugPrint('Error during scan: $e');
-    }
-
+    } finally {
       isScanning = false;
-
+    }
   }
 
   Future<void> connectToDevice(BluetoothDevice device, VoidCallback onDisconnect ) async {

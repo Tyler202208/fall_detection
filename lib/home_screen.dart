@@ -41,14 +41,41 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     checkConnection();
     getBatteryLevel();
-    manager.requestPermissions();
-
+    initBluetooth();
     manager.onDataReceived.listen((message) {
       if (message == "FALL DETECTED!") {
+        setState(() {
+        });
         _showFallAlert();
       }
     });
   }
+
+  Future<void> initBluetooth() async {
+    await manager.requestPermissions();
+
+    // Wait until Bluetooth is ON before scanning
+    BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
+    if (state != BluetoothAdapterState.on) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Bluetooth Off'),
+          content: const Text('Please enable Bluetooth and try again.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+  }
+
+
 
   void _showFallAlert() {
     showDialog(
@@ -71,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+    userHasFallen();
   }
 
   Future<void> checkConnection() async {
@@ -91,9 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   //TODO: Assume you've added to total alerts
   Future <void> userHasFallen() async {
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(uid).get();
+    if (!snapshot.exists) return;
     await FirebaseFirestore.instance.collection("Users").doc(uid).update(
         {
-          "alertsToday": totalAlerts,
+          "totalAlerts": snapshot.get("totalAlerts") + 1
+
         }
     );
   }
