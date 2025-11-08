@@ -46,11 +46,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+
+
   //TODO: Assume you've added to total alerts
   Future <void> userHasFallen() async {
+    DocumentSnapshot documentSnapshot =  await FirebaseFirestore.instance.collection("Users").doc(uid).get();
+
+    if(!documentSnapshot.exists) {
+      return;
+    }
+    var data = documentSnapshot.data() as Map<String, dynamic>?;
+
+
+
     await FirebaseFirestore.instance.collection("Users").doc(uid).update(
         {
           "alertsToday": totalAlerts,
+          "totalAlerts": data?["alertsToday"] + 1 ?? 0
         }
     );
   }
@@ -286,6 +298,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     );
   }
+}
+
+class data {
 }
 
 class SensorRowItem extends StatelessWidget {
