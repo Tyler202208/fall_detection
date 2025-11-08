@@ -31,7 +31,19 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDeviceConnected = false;
   int totalAlerts = -1;
   final uid = FirebaseAuth.instance.currentUser!.uid;
-  Bluetooth get manager => widget.bluetoothManager;
+
+  BluetoothDevice? connectedDevice;
+  BluetoothCharacteristic? uartCharacteristic;
+  StreamSubscription<List<int>>? characteristicSubscription;
+  bool isScanning = false;
+  bool isConnected = false;
+  List<ScanResult> scanResults = [];
+  List<String> fallAlerts = [];
+
+  // Nordic UART Service UUID
+  static const String uartServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+  static const String uartRxCharacteristicUuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
 
 
 
@@ -41,64 +53,155 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     checkConnection();
     getBatteryLevel();
-    initBluetooth();
-    manager.onDataReceived.listen((message) {
-      if (message == "FALL DETECTED!") {
+    _requestPermissions();
+  }
+
+  @override
+  void dispose() {
+    characteristicSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _requestPermissions() async {
+    await [
+      Permission.bluetooth,
+      Permission.bluetoothScan,
+      Permission.bluetoothConnect,
+      Permission.location,
+    ].request();
+  }
+
+  Future<void> _startScan() async {
+    if (isScanning) return;
+
+    setState(() {
+      isScanning = true;
+      scanResults.clear();
+    });
+
+    try {
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
+
+      FlutterBluePlus.scanResults.listen((results) {
         setState(() {
+          scanResults = results.where((result) =>
+          result.device.platformName.isNotEmpty &&
+              (result.device.platformName.contains('FallDetector') ||
+                  result.advertisementData.advName.contains('FallDetector'))
+          ).toList();
         });
-        _showFallAlert();
-      }
+      });
+
+      await Future.delayed(const Duration(seconds: 10));
+      await FlutterBluePlus.stopScan();
+    } catch (e) {
+      debugPrint('Error during scan: $e');
+    }
+
+    setState(() {
+      isScanning = false;
     });
   }
 
-  Future<void> initBluetooth() async {
-    await manager.requestPermissions();
+  Future<void> _connectToDevice(BluetoothDevice device) async {
+    try {
+      await device.connect(timeout: const Duration(seconds: 10));
 
-    // Wait until Bluetooth is ON before scanning
-    BluetoothAdapterState state = await FlutterBluePlus.adapterState.first;
-    if (state != BluetoothAdapterState.on) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Bluetooth Off'),
-          content: const Text('Please enable Bluetooth and try again.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
-      return;
+      setState(() {
+        connectedDevice = device;
+        isConnected = true;
+      });
+
+      // Discover services
+      List<BluetoothService> services = await device.discoverServices();
+
+      // Find UART service
+      for (BluetoothService service in services) {
+        if (service.uuid.toString().toLowerCase() == uartServiceUuid.toLowerCase()) {
+          // Find RX characteristic
+          for (BluetoothCharacteristic characteristic in service.characteristics) {
+            if (characteristic.uuid.toString().toLowerCase() == uartRxCharacteristicUuid.toLowerCase()) {
+              uartCharacteristic = characteristic;
+
+              // Subscribe to notifications
+              await characteristic.setNotifyValue(true);
+              characteristicSubscription = characteristic.lastValueStream.listen(_onDataReceived);
+              break;
+            }
+          }
+          break;
+        }
+      }
+
+      // Listen for disconnection
+      device.connectionState.listen((state) {
+        if (state == BluetoothConnectionState.disconnected) {
+          setState(() {
+            isConnected = false;
+            connectedDevice = null;
+            uartCharacteristic = null;
+          });
+          characteristicSubscription?.cancel();
+        }
+      });
+
+    } catch (e) {
+      debugPrint('Error connecting to device: $e');
     }
-
   }
 
+  void _onDataReceived(List<int> data) {
+    // Debug: Show raw data bytes
+    print('Raw data bytes: $data');
 
+    // Decode the message
+    String message = utf8.decode(data).trim();
+
+    // Debug: Show decoded message with length and character codes
+    print('Decoded message: "$message" (length: ${message.length})');
+    print('Character codes: ${message.codeUnits}');
+
+
+    if (message == "FALL DETECTED!") {
+      // Add to a visible log in the UI
+      setState(() {
+        fallAlerts.insert(0, 'Received: "$message" at ${DateTime.now().toString()}');
+      });
+
+      // Show alert dialog
+      _showFallAlert();
+    }
+  }
 
   void _showFallAlert() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: Colors.red, size: 30),
-            SizedBox(width: 10),
-            Text('FALL DETECTED!'),
-          ],
-        ),
-        content: const Text('A fall has been detected by the sensor.'),
-        backgroundColor: Colors.red[50],
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.warning, color: Colors.red, size: 30),
+              SizedBox(width: 10),
+              Text('FALL DETECTED!'),
+            ],
           ),
-        ],
-      ),
+          content: const Text('A fall has been detected by the sensor.'),
+          backgroundColor: Colors.red[50],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
-    userHasFallen();
+  }
+
+  Future<void> _disconnect() async {
+    if (connectedDevice != null) {
+      await connectedDevice!.disconnect();
+    }
   }
 
   Future<void> checkConnection() async {
@@ -116,63 +219,6 @@ class _HomeScreenState extends State<HomeScreen> {
     print(getBattery);
   }
 
-
-  //TODO: Assume you've added to total alerts
-  Future <void> userHasFallen() async {
-    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection("Users").doc(uid).get();
-    if (!snapshot.exists) return;
-    await FirebaseFirestore.instance.collection("Users").doc(uid).update(
-        {
-          "totalAlerts": snapshot.get("totalAlerts") + 1
-
-        }
-    );
-  }
-
-  void scanPopup (var results){
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Device Connected'),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              if (manager.scanResults.isNotEmpty) ...[
-                const SizedBox(height: 20),
-                const Text('Available Devices:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                ...manager.scanResults.map((result) => Card(
-                  child: ListTile(
-                    title: Text(result.device.platformName.isNotEmpty
-                        ? result.device.platformName
-                        : result.advertisementData.advName),
-                    subtitle: Text(result.device.remoteId.toString()),
-                    trailing: ElevatedButton(
-                      onPressed: () async {
-                        await manager.connectToDevice(result.device, () {
-                          setState(() {});
-                        });
-                        setState(() {});
-                      },
-                      child: const Text('Connect'),
-                    ),
-                  ),
-                )),
-              ],
-
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                       Text(
-                          manager.isConnected? "System Active": "System Offline",
+                          isConnected? "System Active": "System Offline",
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -222,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       CircleAvatar(
                         backgroundColor:
-                        manager.isConnected? Colors.green.withOpacity(0.7): Colors.red.withOpacity(0.7),
+                        isConnected? Colors.green.withOpacity(0.7): Colors.red.withOpacity(0.7),
                         radius: 10,
                       )
                     ]
@@ -338,11 +384,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
-                                color: manager.isConnected? Colors.lightGreen.withOpacity(0.4) : Colors.red.withOpacity(0.4),
+                                color: isConnected? Colors.lightGreen.withOpacity(0.4) : Colors.red.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(15)
                             ),
                             child: Text(
-                              manager.isConnected? "Connected": "Disconnected",
+                              isConnected? "Connected": "Disconnected",
                               style: TextStyle(
                                 fontSize: 15,
                                 color:
@@ -401,36 +447,149 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 20,),
 
-            Text(
-              manager.isConnected? "Connected" : "Not Connected",
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 25,
-                fontWeight: FontWeight.bold
+
+
+
+
+
+
+
+
+
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          isConnected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+                          color: isConnected ? Colors.green : Colors.grey,
+                          size: 30,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            isConnected
+                                ? 'Connected to ${connectedDevice?.platformName ?? "Unknown"}'
+                                : 'Not connected',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: isConnected ? null : _startScan,
+                            child: Text(isScanning ? 'Scanning...' : 'Scan for Devices'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: isConnected ? _disconnect : null,
+                            child: const Text('Disconnect'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
 
-            GestureDetector(
-              onTap: manager.isConnected
-                  ? null
-                  : () async {
-                await manager.startScan((results) {
-                  setState(() {
-
-                  });
-                  scanPopup(results);
-                });
-              },
-              child: CircleAvatar(
-                backgroundColor: Colors.grey.withOpacity(0.3),
-                radius: 80,
-                child: Icon(
-                    manager.isConnected? Icons.bluetooth:Icons.bluetooth_disabled,
-                    color: Colors.black,
-                    size: 80,
+            // Scan Results
+            if (scanResults.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              const Text('Available Devices:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              ...scanResults.map((result) => Card(
+                child: ListTile(
+                  title: Text(result.device.platformName.isNotEmpty
+                      ? result.device.platformName
+                      : result.advertisementData.advName),
+                  subtitle: Text(result.device.remoteId.toString()),
+                  trailing: ElevatedButton(
+                    onPressed: () => _connectToDevice(result.device),
+                    child: const Text('Connect'),
+                  ),
                 ),
+              )),
+            ],
+
+            // Fall Alerts History
+            const SizedBox(height: 20),
+            const Text('Fall Alerts:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Expanded(
+              child: fallAlerts.isEmpty
+                  ? const Center(
+                child: Text(
+                  'No fall alerts yet.\nConnect to your fall detector to monitor for falls.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              )
+                  : ListView.builder(
+                itemCount: fallAlerts.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    color: Colors.red[50],
+                    child: ListTile(
+                      leading: const Icon(Icons.warning, color: Colors.red),
+                      title: const Text('Fall Detected'),
+                      subtitle: Text(fallAlerts[index]),
+                    ),
+                  );
+                },
               ),
-            )
+            ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           ],
         ),
