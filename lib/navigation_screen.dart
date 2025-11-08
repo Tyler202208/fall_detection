@@ -5,6 +5,8 @@ import 'package:senior_fall_detection/fall_alert.dart';
 import 'package:senior_fall_detection/home_screen.dart';
 import 'package:senior_fall_detection/profile.dart';
 
+import 'bluetooth.dart';
+
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
 
@@ -14,13 +16,29 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
 
+
+  final Bluetooth bluetooth_manager = Bluetooth();
+  late final List <Widget> _pages;
   int _selectedIndex = 0;
-  static final List<Widget> _pages = <Widget>[
-    HomeScreen(),
-    ActivityMonitor(),
-    Profile(),
-    Placeholder()
-  ];
+
+  @override
+  void initState(){
+    super.initState();
+
+    _pages = <Widget>[
+      HomeScreen(bluetoothManager: bluetooth_manager),
+      ActivityMonitor(bluetoothManager: bluetooth_manager,),
+      Profile(bluetoothManager: bluetooth_manager,),
+      Placeholder()
+    ];
+  }
+
+  @override
+  void dispose() {
+    bluetooth_manager.dispose();
+    super.dispose();
+  }
+
 
   void _onItemTapped(int index){
     setState(() {

@@ -3,8 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
 
+import 'bluetooth.dart';
+
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+
+  final Bluetooth bluetoothManager;
+  const Profile({super.key, required this.bluetoothManager});
 
   @override
   State<Profile> createState() => _ProfileState();
