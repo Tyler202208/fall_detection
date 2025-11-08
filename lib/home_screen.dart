@@ -224,330 +224,328 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Text(
-              "Fall Detection",
-              style: TextStyle(
-                fontSize: 50
-              )
-            ),
-            Text(
-              "Smart monitoring for your safety",
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.grey
-
-              )
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-              decoration: BoxDecoration(
-                color: primary_color,
-                borderRadius: BorderRadius.circular(15)
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Text(
+                "Fall Detection",
+                style: TextStyle(
+                  fontSize: 50
+                )
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Icon(
-                          Icons.shield,
-                          color: Colors.white,
-                          size: 30,
-                      ),
+              Text(
+                "Smart monitoring for your safety",
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.grey
 
-                      Text(
-                          isConnected? "System Active": "System Offline",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20
-                          ),
-                      ),
-                      CircleAvatar(
-                        backgroundColor:
-                        isConnected? Colors.green.withOpacity(0.7): Colors.red.withOpacity(0.7),
-                        radius: 10,
-                      )
-                    ]
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Column(
-                        children: [
-                          Text(
-                            "24/7",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20
-                            ),
-                          ),
-                          Text(
-                            "Monitoring",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          StreamBuilder(
-                            stream: FirebaseFirestore.instance.collection("Users").doc(uid).snapshots(),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Center(
-                                      child: CircularProgressIndicator()
-                                  );
-                                }
-                                else if (snapshot.hasError) {
-                                  return Center(child: Text(
-                                      "Failed to Connect to Firebase"));
-                                }
-                                final user_data;
-                                var alertsToday;
-
-                                try{
-                                  user_data = snapshot.data!.data() as Map<String, dynamic>;
-                                  alertsToday = user_data["alertsToday"];
-                                  totalAlerts = alertsToday;
-
-                                }
-                                catch (e){
-                                  alertsToday = 0;
-                                }
-                                return Text(
-                                  "$alertsToday",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20
-                                  ),
-                                );
-                              }
-                          ),
-                          Text(
-                            "Alerts Today",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20
-                            ),
-                          )
-                        ],
-                      ),
-
-
-
-                    ],
-                  ),
-
-
-
-
-                ]
-
-
-              )
-            ),
-
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              padding: EdgeInsets.all(15),
-
+                )
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
                 decoration: BoxDecoration(
-                  color: card_color,
+                  color: primary_color,
                   borderRadius: BorderRadius.circular(15)
-
                 ),
                 child: Column(
                   children: [
                     Row(
-                        children: [
-                          Text(
-                            "Sensor Status",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 30
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Icon(
+                            Icons.shield,
+                            color: Colors.white,
+                            size: 30,
+                        ),
 
-                            )
-                          ),
-                          Spacer(),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: isConnected? Colors.lightGreen.withOpacity(0.4) : Colors.red.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(15)
+                        Text(
+                            isConnected? "System Active": "System Offline",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20
                             ),
-                            child: Text(
-                              isConnected? "Connected": "Disconnected",
+                        ),
+                        CircleAvatar(
+                          backgroundColor:
+                          isConnected? Colors.green.withOpacity(0.7): Colors.red.withOpacity(0.7),
+                          radius: 10,
+                        )
+                      ]
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              "24/7",
                               style: TextStyle(
-                                fontSize: 15,
-                                color:
-                                Colors.green[900]
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20
                               ),
                             ),
-                          )
-                        ]
+                            Text(
+                              "Monitoring",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            StreamBuilder(
+                              stream: FirebaseFirestore.instance.collection("Users").doc(uid).snapshots(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Center(
+                                        child: CircularProgressIndicator()
+                                    );
+                                  }
+                                  else if (snapshot.hasError) {
+                                    return Center(child: Text(
+                                        "Failed to Connect to Firebase"));
+                                  }
+                                  final user_data;
+                                  var alertsToday;
+
+                                  try{
+                                    user_data = snapshot.data!.data() as Map<String, dynamic>;
+                                    alertsToday = user_data["alertsToday"];
+                                    totalAlerts = alertsToday;
+
+                                  }
+                                  catch (e){
+                                    alertsToday = 0;
+                                  }
+                                  return Text(
+                                    "$alertsToday",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20
+                                    ),
+                                  );
+                                }
+                            ),
+                            Text(
+                              "Alerts Today",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20
+                              ),
+                            )
+                          ],
+                        ),
+
+
+
+                      ],
                     ),
-                    SensorRowItem(
-                        text: 'Wifi Connection',
-                        icon: isMobileConnected?
+
+
+
+
+                  ]
+
+
+                )
+              ),
+
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                padding: EdgeInsets.all(15),
+
+                  decoration: BoxDecoration(
+                    color: card_color,
+                    borderRadius: BorderRadius.circular(15)
+
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                          children: [
+                            Text(
+                              "Sensor Status",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 30
+
+                              )
+                            ),
+                            Spacer(),
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              decoration: BoxDecoration(
+                                  color: isConnected? Colors.lightGreen.withOpacity(0.4) : Colors.red.withOpacity(0.4),
+                                  borderRadius: BorderRadius.circular(15)
+                              ),
+                              child: Text(
+                                isConnected? "Connected": "Disconnected",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color:
+                                  Colors.green[900]
+                                ),
+                              ),
+                            )
+                          ]
+                      ),
+                      SensorRowItem(
+                          text: 'Wifi Connection',
+                          icon: isMobileConnected?
+                            Icon(
+                              Icons.wifi,
+                              color: primary_color,
+                              size: 30,
+                            ):
+                            Icon(
+                              Icons.wifi_1_bar,
+                              color: Colors.red,
+                              size: 30
+                            ) ,
+                          trailing: isMobileConnected?
+                              "Strong":
+                              "Weak"
+                      ),
+                      SensorRowItem(
+                          text: "Battery Level",
+                          icon: Icon(
+                            Icons.battery_3_bar,
+                            color: Colors.green,
+                            size: 30,
+                          ),
+                          trailing: getBattery.toString()
+                      ),
+                      SensorRowItem(
+                          text: 'Signal Strength',
+                          icon: isMobileConnected?
                           Icon(
-                            Icons.wifi,
+                            Icons.signal_cellular_alt,
                             color: primary_color,
                             size: 30,
                           ):
                           Icon(
-                            Icons.wifi_1_bar,
-                            color: Colors.red,
-                            size: 30
+                              Icons.signal_cellular_alt_1_bar,
+                              color: Colors.red,
+                              size: 30
                           ) ,
-                        trailing: isMobileConnected?
-                            "Strong":
-                            "Weak"
-                    ),
-                    SensorRowItem(
-                        text: "Battery Level",
-                        icon: Icon(
-                          Icons.battery_3_bar,
-                          color: Colors.green,
-                          size: 30,
-                        ),
-                        trailing: getBattery.toString()
-                    ),
-                    SensorRowItem(
-                        text: 'Signal Strength',
-                        icon: isMobileConnected?
-                        Icon(
-                          Icons.signal_cellular_alt,
-                          color: primary_color,
-                          size: 30,
-                        ):
-                        Icon(
-                            Icons.signal_cellular_alt_1_bar,
-                            color: Colors.red,
-                            size: 30
-                        ) ,
-                        trailing: isMobileConnected?
-                        "Strong":
-                        "Weak"
-                    )
+                          trailing: isMobileConnected?
+                          "Strong":
+                          "Weak"
+                      )
 
-                  ],
-                )
-            ),
-            SizedBox(height: 20,),
-
-
-
-
-
-
-
-
-
-
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          isConnected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
-                          color: isConnected ? Colors.green : Colors.grey,
-                          size: 30,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            isConnected
-                                ? 'Connected to ${connectedDevice?.platformName ?? "Unknown"}'
-                                : 'Not connected',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: isConnected ? null : _startScan,
-                            child: Text(isScanning ? 'Scanning...' : 'Scan for Devices'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: isConnected ? _disconnect : null,
-                            child: const Text('Disconnect'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                    ],
+                  )
               ),
-            ),
+              SizedBox(height: 20,),
 
-            // Scan Results
-            if (scanResults.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              const Text('Available Devices:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              ...scanResults.map((result) => Card(
-                child: ListTile(
-                  title: Text(result.device.platformName.isNotEmpty
-                      ? result.device.platformName
-                      : result.advertisementData.advName),
-                  subtitle: Text(result.device.remoteId.toString()),
-                  trailing: ElevatedButton(
-                    onPressed: () => _connectToDevice(result.device),
-                    child: const Text('Connect'),
+
+
+
+
+
+
+
+
+
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            isConnected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+                            color: isConnected ? Colors.green : Colors.grey,
+                            size: 30,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              isConnected
+                                  ? 'Connected to ${connectedDevice?.platformName ?? "Unknown"}'
+                                  : 'Not connected',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: isConnected ? null : _startScan,
+                              child: Text(isScanning ? 'Scanning...' : 'Scan for Devices'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: isConnected ? _disconnect : null,
+                              child: const Text('Disconnect'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              )),
-            ],
-
-            // Fall Alerts History
-            const SizedBox(height: 20),
-            const Text('Fall Alerts:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Expanded(
-              child: fallAlerts.isEmpty
-                  ? const Center(
-                child: Text(
-                  'No fall alerts yet.\nConnect to your fall detector to monitor for falls.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              )
-                  : ListView.builder(
-                itemCount: fallAlerts.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    color: Colors.red[50],
-                    child: ListTile(
-                      leading: const Icon(Icons.warning, color: Colors.red),
-                      title: const Text('Fall Detected'),
-                      subtitle: Text(fallAlerts[index]),
-                    ),
-                  );
-                },
               ),
-            ),
+
+              // Scan Results
+              if (scanResults.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text('Available Devices:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                ...scanResults.map((result) => Card(
+                  child: ListTile(
+                    title: Text(result.device.platformName.isNotEmpty
+                        ? result.device.platformName
+                        : result.advertisementData.advName),
+                    subtitle: Text(result.device.remoteId.toString()),
+                    trailing: ElevatedButton(
+                      onPressed: () => _connectToDevice(result.device),
+                      child: const Text('Connect'),
+                    ),
+                  ),
+                )),
+              ],
+
+              // Fall Alerts History
+              const SizedBox(height: 20),
+              const Text('Fall Alerts:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              if (fallAlerts.isEmpty)
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'No fall alerts yet.\nConnect to your fall detector to monitor for falls.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                  ),
+                )
+              else
+              ...fallAlerts.map( (alert) => Card(
+                color: Colors.red[50],
+                child: ListTile(
+                  leading: const Icon(Icons.warning, color: Colors.red),
+                  title: const Text('Fall Detected'),
+                  subtitle: Text(alert),
+                ),
+              ),
+              ),
 
 
 
@@ -591,7 +589,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-          ],
+    ],
+          ),
         ),
       ),
 
