@@ -43,6 +43,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               "email": _emailController.text.trim(),
               "createdAt": FieldValue.serverTimestamp(),
               "alertsToday": 0,
+              "profileImageUrl": "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png"
             }
           );
         }
