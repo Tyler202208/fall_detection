@@ -103,6 +103,36 @@ class _ProfileState extends State<Profile> {
     }
 }
 
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked != null) {
+      setState(() {
+        _imageFile = File(picked.path);
+      });
+    }
+  }
+
+  Future<String?> _uploadProfileImage() async {
+    if (_imageFile == null || user == null) return null;
+
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child(
+        'profile_images/${user!.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
+      await storageRef.putFile(_imageFile!);
+      return await storageRef.getDownloadURL();
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser!.uid;
