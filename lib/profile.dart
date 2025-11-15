@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'bluetooth.dart';
 
@@ -15,6 +19,9 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+
+  File? _imageFile;
+  User? get user => FirebaseAuth.instance.currentUser;
 
   Future<String> _promptForPassword() async{
     String password = "";
@@ -107,6 +114,57 @@ class _ProfileState extends State<Profile> {
     }
 }
 
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    String? profileImageUrl;
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked != null) {
+      setState(() {
+        _imageFile = File(picked.path);
+      });
+    }
+    // Upload new image if selected
+    if (_imageFile != null) {
+      profileImageUrl = await _uploadProfileImage();
+      if (profileImageUrl == null) {
+        throw Exception('Failed to upload image');
+      }
+    }
+    // Update user profile in Firestore
+    final updateData = {
+      'profileImageUrl': profileImageUrl ?? '',
+    };
+
+// Only update image URL if we have a new one
+    if (profileImageUrl != null) {
+      updateData['profileImageUrl'] = profileImageUrl;
+    }
+
+    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update(updateData);
+  }
+
+  Future<String?> _uploadProfileImage() async {
+    if (_imageFile == null || user == null) return null;
+
+    try {
+      final storageRef = FirebaseStorage.instance.ref().child(
+        'profile_images/${user!.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
+
+      await storageRef.putFile(_imageFile!);
+      return await storageRef.getDownloadURL();
+    } catch (e) {
+      print('Error uploading image: $e');
+      return null;
+    }
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -159,6 +217,7 @@ class _ProfileState extends State<Profile> {
               var user_age;
               var user_address;
               var user_emergencyContacts;
+              var user_profilePic;
 
               try{
                 user_data = snapshot.data!.data() as Map<String, dynamic>;
@@ -166,12 +225,14 @@ class _ProfileState extends State<Profile> {
                 user_age = user_data["age"];
                 user_address = user_data["address"];
                 user_emergencyContacts = user_data["emergency_contacts"];
+                user_profilePic = user_data["profileImageUrl"];
               }
               catch (e){
                 user_name = "";
                 user_age = "";
                 user_address = "";
                 user_emergencyContacts = "";
+                user_profilePic = "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png";
               }
 
               //TODO: Use fields in blueprint (my UI)
@@ -184,10 +245,13 @@ class _ProfileState extends State<Profile> {
                     color: primary_color,
                     child: Column(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          backgroundImage: NetworkImage("https://images.ctfassets.net/oggad6svuzkv/5YoLpGXo6j1KA2YEzDCwpA/1dd135ecc891aa5ae6488338f759120e/Guy_Persaud.jpg.png"),
-                          radius: 40,
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white.withOpacity(0.2),
+                            backgroundImage: NetworkImage(user_profilePic),
+                            radius: 40,
+                          ),
                         ),
                         SizedBox(height: 10),
                         Text(
