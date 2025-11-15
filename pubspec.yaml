@@ -40,7 +40,8 @@ dependencies:
   cloud_firestore: ^6.0.1
   connectivity_plus: ^7.0.0
   battery_plus: ^7.0.0
-  image_picker: ^1.1.2
+  flutter_blue_plus: ^1.32.12
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

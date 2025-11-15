@@ -3,8 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
 
+import 'bluetooth.dart';
+
 class ActivityMonitor extends StatefulWidget {
-  const ActivityMonitor({super.key});
+
+  final Bluetooth bluetoothManager;
+  const ActivityMonitor({super.key, required this.bluetoothManager});
 
   @override
   State<ActivityMonitor> createState() => _ActivityMonitorState();
