@@ -248,12 +248,32 @@ class _ProfileState extends State<Profile> {
                     color: primary_color,
                     child: Column(
                       children: [
-                        GestureDetector(
-                          onTap: _pickImage,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white.withOpacity(0.2),
-                            backgroundImage: NetworkImage(user_profilePic),
-                            radius: 40,
+                        Container(
+                          width: 100,
+                          height: 100,
+                          child: GestureDetector(
+                            onTap: _pickImage,
+                            child: Stack(
+                              children: [
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.white.withOpacity(0.2),
+                                    backgroundImage: NetworkImage(user_profilePic),
+                                    radius: 40,
+                                  ),
+                                ),
+                                Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Icon(
+                                    Icons.upload,
+                                    color: Colors.white,
+                                    size: 30,
+
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                         SizedBox(height: 10),

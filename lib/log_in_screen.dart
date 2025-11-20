@@ -122,7 +122,14 @@ class _LogInScreenState extends State<LogInScreen> {
                         )
                     ),
                     if(_error != null) ...[
-                      Text(_error!),
+                      Text(
+                        _error!,
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 20
+                        ),
+
+                      ),
                       SizedBox(height: 16)
                     ],
                   ]

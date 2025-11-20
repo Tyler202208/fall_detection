@@ -166,7 +166,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   )
               ),
               if(_error != null) ...[
-                Text(_error!),
+                Text(
+                  _error!,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 20
+                  ),
+                ),
                 SizedBox(height: 16)
               ],
             ],
