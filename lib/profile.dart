@@ -143,7 +143,7 @@ class _ProfileState extends State<Profile> {
       updateData['profileImageUrl'] = profileImageUrl;
     }
 
-    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update(updateData);
+    await FirebaseFirestore.instance.collection('Users').doc(user!.uid).update(updateData);
   }
 
   Future<String?> _uploadProfileImage() async {
