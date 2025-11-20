@@ -218,6 +218,7 @@ class _ProfileState extends State<Profile> {
               var user_address;
               var user_emergencyContacts;
               var user_profilePic;
+              var user_fallsDetected;
 
               try{
                 user_data = snapshot.data!.data() as Map<String, dynamic>;
@@ -226,6 +227,7 @@ class _ProfileState extends State<Profile> {
                 user_address = user_data["address"];
                 user_emergencyContacts = user_data["emergency_contacts"];
                 user_profilePic = user_data["profileImageUrl"];
+                user_fallsDetected = user_data["alertsToday"];
               }
               catch (e){
                 user_name = "";
@@ -233,6 +235,7 @@ class _ProfileState extends State<Profile> {
                 user_address = "";
                 user_emergencyContacts = "";
                 user_profilePic = "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png";
+                user_fallsDetected = "";
               }
 
               //TODO: Use fields in blueprint (my UI)
@@ -297,7 +300,7 @@ class _ProfileState extends State<Profile> {
                                 text: "Monitoring"
                             ),
                             Number_word(
-                                number: "0",
+                                number: user_fallsDetected.toString(),
                                 text: "Falls",
                                 optional_text: "Detected"
                             ),
