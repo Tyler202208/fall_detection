@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:senior_fall_detection/activity_monitor.dart';
 import 'package:senior_fall_detection/constants.dart';
 import 'package:senior_fall_detection/fall_alert.dart';
 import 'package:senior_fall_detection/home_screen.dart';
 import 'package:senior_fall_detection/profile.dart';
 
+import 'ble_session.dart';
 import 'bluetooth.dart';
 
 class NavigationScreen extends StatefulWidget {
@@ -16,20 +18,27 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
 
-
   final Bluetooth bluetooth_manager = Bluetooth();
+  final BleSession bleSession = BleSession();
+
   late final List <Widget> _pages;
   int _selectedIndex = 0;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
-    _pages = <Widget>[
-      HomeScreen(bluetoothManager: bluetooth_manager),
-      ActivityMonitor(bluetoothManager: bluetooth_manager,),
-      Profile(bluetoothManager: bluetooth_manager,),
-      Placeholder()
+    _pages = [
+      HomeScreen(
+        bluetoothManager: bluetooth_manager,
+        bleSession: bleSession,
+      ),
+      ActivityMonitor(
+        bleSession: bleSession,
+      ),
+      Profile(
+        // bleSession: bleSession,
+      ),
     ];
   }
 

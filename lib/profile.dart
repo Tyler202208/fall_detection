@@ -11,8 +11,7 @@ import 'bluetooth.dart';
 
 class Profile extends StatefulWidget {
 
-  final Bluetooth bluetoothManager;
-  const Profile({super.key, required this.bluetoothManager});
+  const Profile({super.key});
 
   @override
   State<Profile> createState() => _ProfileState();

@@ -3,12 +3,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:senior_fall_detection/constants.dart';
 
+import 'ble_session.dart';
 import 'bluetooth.dart';
 
 class ActivityMonitor extends StatefulWidget {
 
-  final Bluetooth bluetoothManager;
-  const ActivityMonitor({super.key, required this.bluetoothManager});
+  final BleSession bleSession;
+  const ActivityMonitor({super.key, required this.bleSession});
+
+
+
 
   @override
   State<ActivityMonitor> createState() => _ActivityMonitorState();
@@ -17,6 +21,25 @@ class ActivityMonitor extends StatefulWidget {
 
 
 class _ActivityMonitorState extends State<ActivityMonitor> {
+
+
+  @override
+  void initState() {
+    super.initState();
+    widget.bleSession.addListener(_handleBleMessage);
+  }
+
+  void _handleBleMessage(String message) {
+    setState(() {
+      // update UI
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.bleSession.removeListener(_handleBleMessage);
+    super.dispose();
+  }
 
   User? get user => FirebaseAuth.instance.currentUser;
 
