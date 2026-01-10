@@ -7,6 +7,7 @@ import 'package:senior_fall_detection/personal_info_screen.dart';
 import 'package:senior_fall_detection/sign_in_screen.dart';
 import 'package:senior_fall_detection/splash_screen.dart';
 import 'firebase_options.dart';
+import 'line_chart_sample2.dart';
 
 
 Future<void> main() async {
