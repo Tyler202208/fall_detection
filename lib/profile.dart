@@ -21,6 +21,7 @@ class _ProfileState extends State<Profile> {
 
   File? _imageFile;
   User? get user => FirebaseAuth.instance.currentUser;
+  bool ifEditing = false;
 
   Future<String> _promptForPassword() async{
     String password = "";
@@ -215,24 +216,32 @@ class _ProfileState extends State<Profile> {
               var user_name;
               var user_age;
               var user_address;
-              var user_emergencyContacts;
+              List <Map<String, dynamic>> user_emergencyContacts;
               var user_profilePic;
               var user_fallsDetected;
 
               try{
                 user_data = snapshot.data!.data() as Map<String, dynamic>;
                 user_name = user_data["name"];
+                print(user_name);
                 user_age = user_data["age"];
                 user_address = user_data["address"];
-                user_emergencyContacts = user_data["emergency_contacts"];
+                try {
+                  user_emergencyContacts = user_data["emergency_contacts"];
+                }
+                catch(e){
+                  user_emergencyContacts = [];
+                }
+                print(user_emergencyContacts);
                 user_profilePic = user_data["profileImageUrl"];
+                print(user_profilePic);
                 user_fallsDetected = user_data["alertsToday"];
               }
               catch (e){
                 user_name = "";
                 user_age = "";
                 user_address = "";
-                user_emergencyContacts = "";
+                user_emergencyContacts = [];
                 user_profilePic = "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png";
                 user_fallsDetected = "";
               }
@@ -305,12 +314,42 @@ class _ProfileState extends State<Profile> {
                             )
                           ],
                         ),
-                        SizedBox(height: 15),
+                        SizedBox(height: 10),
+                        ifEditing?
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                                onPressed: (){},
+                                child: Text("Save")
+                            ),
+
+                            ElevatedButton(
+                                onPressed: (){
+                                  setState(() {
+                                    ifEditing = false;
+                                  });
+                                },
+                                child: Text("Cancel")
+                            ),
+                          ],
+                        )
+                        :ElevatedButton(
+                            onPressed: (){
+                              setState(() {
+                                ifEditing = true;
+                              });
+                            },
+                            child: Text("Edit Profile")
+                        ),
+                        SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Number_word(
                                 number: user_emergencyContacts.length.toString(),
+                                //number: "",
                                 text: "Emergency",
                                 optional_text: "Contacts"
                             ),
@@ -348,7 +387,7 @@ class _ProfileState extends State<Profile> {
                       ],
                     ),
                   ),
-                  ExpansionTile(
+                  ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.grey.withOpacity(0.3),
                       radius: 30,
@@ -361,7 +400,7 @@ class _ProfileState extends State<Profile> {
                     title: Text('Name'),
                     subtitle: Text(user_name),
                   ),
-                  ExpansionTile(
+                  ListTile(
                     leading:  CircleAvatar(
                       backgroundColor: Colors.grey.withOpacity(0.3),
                       radius: 30,
@@ -374,7 +413,7 @@ class _ProfileState extends State<Profile> {
                     title: Text('Age'),
                     subtitle: Text('$user_age years old'),
                   ),
-                  ExpansionTile(
+                  ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.grey.withOpacity(0.3),
                       radius: 30,
