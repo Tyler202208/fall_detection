@@ -252,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Text(
-              "Fall Detection",
+              "StrideGuard",
               style: TextStyle(
                 fontSize: 50
               )
