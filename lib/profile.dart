@@ -22,6 +22,12 @@ class _ProfileState extends State<Profile> {
   File? _imageFile;
   User? get user => FirebaseAuth.instance.currentUser;
   bool ifEditing = false;
+  late TextEditingController updateNameController = TextEditingController();
+  late TextEditingController updateAgeController = TextEditingController();
+  late TextEditingController updateAddressController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isloading = false;
+  String? _error;
 
   Future<String> _promptForPassword() async{
     String password = "";
@@ -162,6 +168,41 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  Future <void> updateProfile() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() {
+        _isloading = true;
+        _error = null;
+      });
+      try{
+        final user = FirebaseAuth.instance.currentUser;
+        await FirebaseFirestore.instance.collection("Users").doc(user?.uid).update(
+            {
+              "name": updateNameController.text.trim(),
+              "age": updateAgeController.text.trim(),
+              "address": updateAddressController.text.trim()
+
+
+            }
+        );
+        setState(() {
+          ifEditing = false;
+        });
+      }
+      catch(e){
+        setState(() {
+          _error = "Update failed";
+        });
+      }
+      finally{
+        setState(() {
+          _isloading = false;
+        });
+      }
+
+    }
+  }
+
 
 
 
@@ -223,9 +264,11 @@ class _ProfileState extends State<Profile> {
               try{
                 user_data = snapshot.data!.data() as Map<String, dynamic>;
                 user_name = user_data["name"];
-                print(user_name);
+                updateNameController.text = user_name;
                 user_age = user_data["age"];
+                updateAgeController.text = user_age;
                 user_address = user_data["address"];
+                updateAddressController.text = user_address;
                 try {
                   user_emergencyContacts = user_data["emergency_contacts"];
                 }
@@ -318,13 +361,14 @@ class _ProfileState extends State<Profile> {
                         ifEditing?
 
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            Spacer(flex:3),
                             ElevatedButton(
-                                onPressed: (){},
+                                onPressed: updateProfile,
                                 child: Text("Save")
                             ),
-
+                            Spacer(flex:1),
                             ElevatedButton(
                                 onPressed: (){
                                   setState(() {
@@ -333,6 +377,7 @@ class _ProfileState extends State<Profile> {
                                 },
                                 child: Text("Cancel")
                             ),
+                            Spacer(flex:3)
                           ],
                         )
                         :ElevatedButton(
@@ -387,44 +432,94 @@ class _ProfileState extends State<Profile> {
                       ],
                     ),
                   ),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      radius: 30,
-                      child: Icon(
-                        Icons.person,
-                        size: 30,
-                        color: Colors.blue,
+                  ifEditing?
+                  Form(
+                    key: _formKey,
+                    child: Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 30),
+                      decoration: BoxDecoration(
+                        color: card_color,
+                        borderRadius: BorderRadius.circular(20)
+
+                    ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: TextFormField(
+                                controller: updateNameController,
+                                decoration: const InputDecoration(labelText: "Enter Your Name"),
+                                validator: (value) => value == null || value.isEmpty ? 'Enter a valid name' : null
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: TextFormField(
+                                controller: updateAgeController,
+                                decoration: const InputDecoration(labelText: "Enter Your Age"),
+                                validator: (value) => value == null || value is num ? 'Enter a valid age' : null
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: TextFormField(
+                                controller: updateAddressController,
+                                decoration: const InputDecoration(labelText: "Enter Your Address"),
+                                validator: (value) => value == null ? 'Enter a valid name' : null
+                            ),
+                          )
+                        ],
                       ),
                     ),
-                    title: Text('Name'),
-                    subtitle: Text(user_name),
-                  ),
-                  ListTile(
-                    leading:  CircleAvatar(
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      radius: 30,
-                      child: Icon(
-                        Icons.cake,
-                        size: 30,
-                        color: Colors.green,
-                      ),
-                    ),
-                    title: Text('Age'),
-                    subtitle: Text('$user_age years old'),
-                  ),
-                  ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      radius: 30,
-                      child: Icon(
-                        Icons.location_on,
-                        size: 30,
-                        color: Colors.purple,
-                      ),
-                    ),
-                    title: Text('Address'),
-                    subtitle: Text(user_address.toString()),
+                  )
+                  :Container(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey.withOpacity(0.3),
+                            radius: 30,
+                            child: Icon(
+                              Icons.person,
+                              size: 30,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          title: Text('Name'),
+                          subtitle: Text(user_name),
+                        ),
+                        ListTile(
+                          leading:  CircleAvatar(
+                            backgroundColor: Colors.grey.withOpacity(0.3),
+                            radius: 30,
+                            child: Icon(
+                              Icons.cake,
+                              size: 30,
+                              color: Colors.green,
+                            ),
+                          ),
+                          title: Text('Age'),
+                          subtitle: Text('$user_age years old'),
+                        ),
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey.withOpacity(0.3),
+                            radius: 30,
+                            child: Icon(
+                              Icons.location_on,
+                              size: 30,
+                              color: Colors.purple,
+                            ),
+                          ),
+                          title: Text('Address'),
+                          subtitle: Text(user_address.toString()),
+                        ),
+                      ],
+                    )
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),

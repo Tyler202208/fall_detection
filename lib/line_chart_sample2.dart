@@ -9,11 +9,11 @@ class LineChartSample2 extends StatefulWidget {
 }
 
 class _LineChartSample2State extends State<LineChartSample2> {
-  List<Color> gradientColors = [
-    Colors.cyan,
-    Colors.blue
-    ,
-  ];
+List<Color> gradientColors = [
+  Colors.cyan,
+  Colors.blue
+  ,
+];
 
   bool showAvg = false;
 
