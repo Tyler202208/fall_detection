@@ -44,7 +44,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
               "createdAt": FieldValue.serverTimestamp(),
               "totalAlerts": 0,
               "alertsToday": 0,
-              "profileImageUrl": "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png"
+              "profileImageUrl": "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRl"
+                  "L3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png"
             }
           );
         }

@@ -43,6 +43,7 @@ dependencies:
   flutter_blue_plus: ^1.32.12
   permission_handler: ^11.3.1
   image_picker: ^1.1.1
+  fl_chart: ^1.1.1
 
 dev_dependencies:
   flutter_test:

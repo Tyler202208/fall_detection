@@ -10,12 +10,15 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'dart:convert';
 
+import 'ble_session.dart';
 import 'bluetooth.dart';
 
 class HomeScreen extends StatefulWidget {
 
+  final BleSession bleSession;
   final Bluetooth bluetoothManager;
-  const HomeScreen({super.key, required this.bluetoothManager});
+
+  const HomeScreen({super.key, required this.bleSession, required this.bluetoothManager});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -123,9 +126,10 @@ class _HomeScreenState extends State<HomeScreen> {
             if (characteristic.uuid.toString().toLowerCase() == uartRxCharacteristicUuid.toLowerCase()) {
               uartCharacteristic = characteristic;
 
+
               // Subscribe to notifications
               await characteristic.setNotifyValue(true);
-              characteristicSubscription = characteristic.lastValueStream.listen(_onDataReceived);
+              characteristicSubscription = characteristic.lastValueStream.listen(widget.bleSession.onDataReceived);
               break;
             }
           }
@@ -248,7 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Text(
-              "Fall Detection",
+              "StrideGuard",
               style: TextStyle(
                 fontSize: 50
               )

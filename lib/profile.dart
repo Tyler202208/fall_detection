@@ -11,8 +11,7 @@ import 'bluetooth.dart';
 
 class Profile extends StatefulWidget {
 
-  final Bluetooth bluetoothManager;
-  const Profile({super.key, required this.bluetoothManager});
+  const Profile({super.key});
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -22,6 +21,13 @@ class _ProfileState extends State<Profile> {
 
   File? _imageFile;
   User? get user => FirebaseAuth.instance.currentUser;
+  bool ifEditing = false;
+  late TextEditingController updateNameController = TextEditingController();
+  late TextEditingController updateAgeController = TextEditingController();
+  late TextEditingController updateAddressController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isloading = false;
+  String? _error;
 
   Future<String> _promptForPassword() async{
     String password = "";
@@ -162,6 +168,41 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  Future <void> updateProfile() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() {
+        _isloading = true;
+        _error = null;
+      });
+      try{
+        final user = FirebaseAuth.instance.currentUser;
+        await FirebaseFirestore.instance.collection("Users").doc(user?.uid).update(
+            {
+              "name": updateNameController.text.trim(),
+              "age": updateAgeController.text.trim(),
+              "address": updateAddressController.text.trim()
+
+
+            }
+        );
+        setState(() {
+          ifEditing = false;
+        });
+      }
+      catch(e){
+        setState(() {
+          _error = "Update failed";
+        });
+      }
+      finally{
+        setState(() {
+          _isloading = false;
+        });
+      }
+
+    }
+  }
+
 
 
 
@@ -216,24 +257,34 @@ class _ProfileState extends State<Profile> {
               var user_name;
               var user_age;
               var user_address;
-              var user_emergencyContacts;
+              List <Map<String, dynamic>> user_emergencyContacts;
               var user_profilePic;
               var user_fallsDetected;
 
               try{
                 user_data = snapshot.data!.data() as Map<String, dynamic>;
                 user_name = user_data["name"];
+                updateNameController.text = user_name;
                 user_age = user_data["age"];
+                updateAgeController.text = user_age;
                 user_address = user_data["address"];
-                user_emergencyContacts = user_data["emergency_contacts"];
+                updateAddressController.text = user_address;
+                try {
+                  user_emergencyContacts = user_data["emergency_contacts"];
+                }
+                catch(e){
+                  user_emergencyContacts = [];
+                }
+                print(user_emergencyContacts);
                 user_profilePic = user_data["profileImageUrl"];
+                print(user_profilePic);
                 user_fallsDetected = user_data["alertsToday"];
               }
               catch (e){
                 user_name = "";
                 user_age = "";
                 user_address = "";
-                user_emergencyContacts = "";
+                user_emergencyContacts = [];
                 user_profilePic = "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png";
                 user_fallsDetected = "";
               }
@@ -306,12 +357,44 @@ class _ProfileState extends State<Profile> {
                             )
                           ],
                         ),
-                        SizedBox(height: 15),
+                        SizedBox(height: 10),
+                        ifEditing?
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Spacer(flex:3),
+                            ElevatedButton(
+                                onPressed: updateProfile,
+                                child: Text("Save")
+                            ),
+                            Spacer(flex:1),
+                            ElevatedButton(
+                                onPressed: (){
+                                  setState(() {
+                                    ifEditing = false;
+                                  });
+                                },
+                                child: Text("Cancel")
+                            ),
+                            Spacer(flex:3)
+                          ],
+                        )
+                        :ElevatedButton(
+                            onPressed: (){
+                              setState(() {
+                                ifEditing = true;
+                              });
+                            },
+                            child: Text("Edit Profile")
+                        ),
+                        SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Number_word(
                                 number: user_emergencyContacts.length.toString(),
+                                //number: "",
                                 text: "Emergency",
                                 optional_text: "Contacts"
                             ),
@@ -349,44 +432,94 @@ class _ProfileState extends State<Profile> {
                       ],
                     ),
                   ),
-                  ExpansionTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      radius: 30,
-                      child: Icon(
-                        Icons.person,
-                        size: 30,
-                        color: Colors.blue,
+                  ifEditing?
+                  Form(
+                    key: _formKey,
+                    child: Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(horizontal: 30),
+                      decoration: BoxDecoration(
+                        color: card_color,
+                        borderRadius: BorderRadius.circular(20)
+
+                    ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: TextFormField(
+                                controller: updateNameController,
+                                decoration: const InputDecoration(labelText: "Enter Your Name"),
+                                validator: (value) => value == null || value.isEmpty ? 'Enter a valid name' : null
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: TextFormField(
+                                controller: updateAgeController,
+                                decoration: const InputDecoration(labelText: "Enter Your Age"),
+                                validator: (value) => value == null || value is num ? 'Enter a valid age' : null
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(horizontal: 30),
+                            child: TextFormField(
+                                controller: updateAddressController,
+                                decoration: const InputDecoration(labelText: "Enter Your Address"),
+                                validator: (value) => value == null ? 'Enter a valid name' : null
+                            ),
+                          )
+                        ],
                       ),
                     ),
-                    title: Text('Name'),
-                    subtitle: Text(user_name),
-                  ),
-                  ExpansionTile(
-                    leading:  CircleAvatar(
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      radius: 30,
-                      child: Icon(
-                        Icons.cake,
-                        size: 30,
-                        color: Colors.green,
-                      ),
-                    ),
-                    title: Text('Age'),
-                    subtitle: Text('$user_age years old'),
-                  ),
-                  ExpansionTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.grey.withOpacity(0.3),
-                      radius: 30,
-                      child: Icon(
-                        Icons.location_on,
-                        size: 30,
-                        color: Colors.purple,
-                      ),
-                    ),
-                    title: Text('Address'),
-                    subtitle: Text(user_address.toString()),
+                  )
+                  :Container(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey.withOpacity(0.3),
+                            radius: 30,
+                            child: Icon(
+                              Icons.person,
+                              size: 30,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          title: Text('Name'),
+                          subtitle: Text(user_name),
+                        ),
+                        ListTile(
+                          leading:  CircleAvatar(
+                            backgroundColor: Colors.grey.withOpacity(0.3),
+                            radius: 30,
+                            child: Icon(
+                              Icons.cake,
+                              size: 30,
+                              color: Colors.green,
+                            ),
+                          ),
+                          title: Text('Age'),
+                          subtitle: Text('$user_age years old'),
+                        ),
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey.withOpacity(0.3),
+                            radius: 30,
+                            child: Icon(
+                              Icons.location_on,
+                              size: 30,
+                              color: Colors.purple,
+                            ),
+                          ),
+                          title: Text('Address'),
+                          subtitle: Text(user_address.toString()),
+                        ),
+                      ],
+                    )
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
