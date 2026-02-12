@@ -128,8 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
               // Subscribe to notifications
+              print("before subscriptpion");
               await characteristic.setNotifyValue(true);
-              characteristicSubscription = characteristic.lastValueStream.listen(widget.bleSession.onDataReceived);
+              // characteristicSubscription = characteristic.lastValueStream.listen(widget.bleSession.onDataReceived);
+              characteristicSubscription = characteristic.lastValueStream.listen(_onDataReceived);
+              print("after subscription");
               break;
             }
           }
@@ -166,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
     print('Character codes: ${message.codeUnits}');
 
 
-    if (message == "FALL DETECTED!") {
+    if (message == "INSTABILITY WARNING!") {
       // Add to a visible log in the UI
       setState(() {
         fallAlerts.insert(0, 'Received: "$message" at ${DateTime.now().toString()}');
@@ -471,16 +474,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
             ),
             SizedBox(height: 20,),
-
-
-
-
-
-
-
-
-
-
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

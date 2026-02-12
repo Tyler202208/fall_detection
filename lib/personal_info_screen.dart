@@ -209,117 +209,119 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         backgroundColor: primary_color,
 
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              textAlign: TextAlign.center,
-              "Provide your emergency contacts",
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                textAlign: TextAlign.center,
+                "Provide your emergency contacts",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 30
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+        
+            Text(
+              "Contact Full Name",
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 30
               ),
             ),
-          ),
-          SizedBox(height: 20),
-
-          Text(
-            "Contact Full Name",
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 30
-            ),
-          ),
-          SizedBox(height: 20),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 12),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-                color: card_color,
-                borderRadius: BorderRadius.circular(15)
-            ),
-            child: TextFormField(
-              controller: _contactname,
-              validator: (value) => value != null ? null : 'Enter a valid name',
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            "Contact Phone Number",
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 30
-            ),
-          ),
-          SizedBox(height: 20),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 12),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-                color: card_color,
-                borderRadius: BorderRadius.circular(15)
-            ),
-            child: TextFormField(
-              controller: _contactnumber,
-              validator: (value) => value != null  ? null : 'Enter a valid number',
-            ),
-          ),
-          SizedBox(height: 30),
-          GestureDetector(
-            onTap: _verifyFields,
-            child: Container(
+            SizedBox(height: 20),
+            Container(
               margin: EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                decoration: BoxDecoration(
-                  color: primary_color,
+                  color: card_color,
                   borderRadius: BorderRadius.circular(15)
+              ),
+              child: TextFormField(
+                controller: _contactname,
+                validator: (value) => value != null ? null : 'Enter a valid name',
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Contact Phone Number",
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 30
+              ),
+            ),
+            SizedBox(height: 20),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                  color: card_color,
+                  borderRadius: BorderRadius.circular(15)
+              ),
+              child: TextFormField(
+                controller: _contactnumber,
+                validator: (value) => value != null  ? null : 'Enter a valid number',
+              ),
+            ),
+            SizedBox(height: 30),
+            GestureDetector(
+              onTap: _verifyFields,
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Text(
-                      "Submit",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold
-
-                      ),
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: primary_color,
+                    borderRadius: BorderRadius.circular(15)
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Text(
+                        "Submit",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold
+        
+                        ),
+                    ),
                   ),
                 ),
-              ),
-
-            ),
-          ),
-          SizedBox(height: 30),
-          if (_errorMessage.isNotEmpty)...[
-            Text(
-              _errorMessage,
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30
+        
               ),
             ),
+            SizedBox(height: 30),
+            if (_errorMessage.isNotEmpty)...[
+              Text(
+                _errorMessage,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 30
+                ),
+              ),
+            ],
+            Spacer(
+              flex: 3
+            ),
+            three_dots(dot3: true),
+            Spacer(
+              flex: 1,
+            )
+        
+        
+        
+        
           ],
-          Spacer(
-            flex: 3
-          ),
-          three_dots(dot3: true),
-          Spacer(
-            flex: 1,
-          )
-
-
-
-
-        ],
+        ),
       ),
 
     );
