@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:senior_fall_detection/activity_monitor.dart';
@@ -18,8 +20,10 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
 
-  final Bluetooth bluetooth_manager = Bluetooth();
+  final ble = BluetoothManager.instance;
   final BleSession bleSession = BleSession();
+  StreamSubscription<List<int>>? characteristicSubscription;
+
 
   late final List <Widget> _pages;
   int _selectedIndex = 0;
@@ -29,25 +33,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
     super.initState();
 
     _pages = [
-      HomeScreen(
-        bluetoothManager: bluetooth_manager,
-        bleSession: bleSession,
-      ),
-      ActivityMonitor(
-        bleSession: bleSession,
-      ),
+      HomeScreen(bluetoothManager: ble),
+      ActivityMonitor(bluetoothManager: ble),
       Profile(
         // bleSession: bleSession,
       ),
     ];
   }
-
-  @override
-  void dispose() {
-    bluetooth_manager.dispose();
-    super.dispose();
-  }
-
 
   void _onItemTapped(int index){
     setState(() {

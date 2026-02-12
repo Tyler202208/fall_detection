@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +11,9 @@ import 'bluetooth.dart';
 
 class ActivityMonitor extends StatefulWidget {
 
-  final BleSession bleSession;
-  const ActivityMonitor({super.key, required this.bleSession});
+  final BluetoothManager bluetoothManager;
+  const ActivityMonitor({super.key, required this.bluetoothManager});
+
 
 
 
@@ -23,6 +26,14 @@ class ActivityMonitor extends StatefulWidget {
 
 class _ActivityMonitorState extends State<ActivityMonitor> {
 
+  BluetoothManager get _ble => widget.bluetoothManager;
+
+  // Screen-local copy of fall alerts (mirrors the manager's list for display).
+  List<String> _localFallAlerts = [];
+
+  // Stream subscription for incoming BLE data messages.
+  StreamSubscription<String>? _dataStreamSub;
+
   List<Color> gradientColors = [
     Colors.cyan,
     Colors.blue
@@ -33,19 +44,58 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
   @override
   void initState() {
     super.initState();
-    widget.bleSession.addListener(_handleBleMessage);
-  }
+    _ble.addListener(_onBleStateChanged);
 
-  void _handleBleMessage(String message) {
-    setState(() {
-      // update UI
-    });
+    _dataStreamSub = _ble.dataStream.listen(_onDataMessage);
+
+    _ble.requestPermissions();
+
+    _localFallAlerts = List.of(_ble.fallAlerts);
   }
 
   @override
   void dispose() {
-    widget.bleSession.removeListener(_handleBleMessage);
+    _ble.removeListener(_onBleStateChanged);
+    _dataStreamSub?.cancel();
     super.dispose();
+  }
+
+  void _onBleStateChanged() {
+    if (!mounted) return;
+    setState(() {
+      // Sync fall alerts whenever the manager notifies.
+      _localFallAlerts = List.of(_ble.fallAlerts);
+    });
+  }
+
+  void _onDataMessage(String message) {
+    if (!mounted) return;
+    if (message == "INSTABILITY WARNING!") {
+      _showFallAlert();
+    }
+  }
+
+  void _showFallAlert() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Colors.red, size: 30),
+            SizedBox(width: 10),
+            Text('FALL DETECTED!'),
+          ],
+        ),
+        content: const Text('A fall has been detected by the sensor.'),
+        backgroundColor: Colors.red[50],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget bottomTitleWidgets(double value, TitleMeta meta) {
@@ -195,6 +245,8 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
 
   @override
   Widget build(BuildContext context) {
+    final isConnected = _ble.isConnected;
+
     return Scaffold(
       appBar: AppBar(
         leading: SizedBox(
@@ -235,15 +287,33 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
               color: primary_color,
               child: Column(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                  Container(
+                    width: 80,
+                    height: 90,
+                    child: Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white.withOpacity(0.2),
 
-                    radius: 40,
+                            radius: 40,
 
-                    child: Icon(
-                        Icons.auto_graph,
-                        size: 35,
-                        color: Colors.white,
+                            child: Icon(
+                              Icons.auto_graph,
+                              size: 35,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: CircleAvatar(
+                            backgroundColor: isConnected? Colors.green:Colors.red,
+                            radius: 10,
+                          ),
+                        )
+                      ],
                     ),
                   ),
                   SizedBox(height: 10),
