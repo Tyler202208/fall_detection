@@ -70,9 +70,19 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
 
   void _onDataMessage(String message) {
     if (!mounted) return;
+    print(message);
+    int lastIndex = message.length - 1
     if (message == "INSTABILITY WARNING!") {
+      print(message[lastIndex]);
       _showFallAlert();
     }
+  }
+
+  void addNewValue(double newValue) {
+    if (data.length >= maxLength) {
+      data.removeAt(0); // remove oldest
+    }
+    data.add(newValue); // add newest
   }
 
   void _showFallAlert() {

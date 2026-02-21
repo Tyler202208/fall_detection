@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.warning, color: Colors.red, size: 30),
             SizedBox(width: 10),
-            Text('FALL DETECTED!'),
+            Text('INSTABILITY WARNING'),
           ],
         ),
         content: const Text('A fall has been detected by the sensor.'),
@@ -471,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListTile(
                   leading:
                   const Icon(Icons.warning, color: Colors.red),
-                  title: const Text('Fall Detected'),
+                  title: const Text('Instability Detected'),
                   subtitle: Text(_localFallAlerts[i]),
                 ),
               ),
