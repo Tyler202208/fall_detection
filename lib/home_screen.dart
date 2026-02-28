@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onDataMessage(String message) {
     if (!mounted) return;
-    if (message == "INSTABILITY WARNING!") {
+    if (message == "FALL DETECTED!") {
       _showFallAlert();
     }
   }
@@ -90,10 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.warning, color: Colors.red, size: 30),
             SizedBox(width: 10),
-            Text('INSTABILITY WARNING'),
+            Text("FALL DETECTED"),
           ],
         ),
-        content: const Text('A fall has been detected by the sensor.'),
+        content: const Text('Please get help.'),
         backgroundColor: Colors.red[50],
         actions: [
           TextButton(
@@ -150,12 +150,17 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           children: [
             // ── Header ──────────────────────────────────────────────────
-            const Padding(
-              padding: EdgeInsets.only(top: 16),
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
               child: Center(
-                child: Text(
-                  "StrideGuard",
-                  style: TextStyle(fontSize: 50),
+                child: GestureDetector(
+                  onTap: () {
+                    _showFallAlert();
+                  },
+                  child: const Text(
+                    "StrideGuard",
+                    style: TextStyle(fontSize: 50),
+                  ),
                 ),
               ),
             ),

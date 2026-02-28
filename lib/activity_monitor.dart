@@ -40,6 +40,16 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
     ,
   ];
 
+  List<FlSpot> graphValues =  [
+    FlSpot(0, 3.44),
+    FlSpot(1.5, 3.44),
+    FlSpot(3, 3.44),
+    FlSpot(4.5, 3.44),
+    FlSpot(6, 3.44),
+    FlSpot(7.5, 3.44),
+    FlSpot(9, 3.44),
+  ];
+
 
   @override
   void initState() {
@@ -70,19 +80,32 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
 
   void _onDataMessage(String message) {
     if (!mounted) return;
-    print(message);
-    int lastIndex = message.length - 1
-    if (message == "INSTABILITY WARNING!") {
+
+    if (message.contains("INSTABILITY WARNING!")) {
+      print(message);
+      int lastIndex = message.length - 1;
+      double lastValue = double.parse(message[lastIndex]);
+
       print(message[lastIndex]);
       _showFallAlert();
+      //addNewValue(lastValue);
     }
   }
 
   void addNewValue(double newValue) {
-    if (data.length >= maxLength) {
-      data.removeAt(0); // remove oldest
+    if (graphValues.length >= 7) {
+      graphValues.removeAt(0); // remove oldest
     }
-    data.add(newValue); // add newest
+    //move all the X index by 1.5
+    for (int i = 0; i < graphValues.length - 1; i ++){
+      FlSpot currFlSpot = graphValues[i];
+      double x_index = currFlSpot.x;
+      double y_index = currFlSpot.y;
+      FlSpot newFlSpot = FlSpot(x_index - 1.5, y_index);
+      graphValues[i] = newFlSpot;
+    }
+    FlSpot newAddition = FlSpot(9, newValue);
+    graphValues.add(newAddition); // add newest
   }
 
   void _showFallAlert() {
@@ -210,15 +233,7 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
       maxY: 6,
       lineBarsData: [
         LineChartBarData(
-          spots: const [
-            FlSpot(0, 3.44),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
+          spots: graphValues,
           isCurved: true,
           gradient: LinearGradient(
             colors: [

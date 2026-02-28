@@ -309,13 +309,9 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ),
               ),
             ],
-            Spacer(
-              flex: 3
-            ),
+            SizedBox(height: 50),
             three_dots(dot3: true),
-            Spacer(
-              flex: 1,
-            )
+            SizedBox(height: 20),
         
         
         
