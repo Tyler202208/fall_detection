@@ -75,7 +75,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: [
               Image.asset('assets/fall_detection_logo.png'),
               Text(
-                  "Senior Fall Detection",
+                  "StrideGuard",
                   style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,

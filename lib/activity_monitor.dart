@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +11,9 @@ import 'bluetooth.dart';
 
 class ActivityMonitor extends StatefulWidget {
 
-  final BleSession bleSession;
-  const ActivityMonitor({super.key, required this.bleSession});
+  final BluetoothManager bluetoothManager;
+  const ActivityMonitor({super.key, required this.bluetoothManager});
+
 
 
 
@@ -23,29 +26,152 @@ class ActivityMonitor extends StatefulWidget {
 
 class _ActivityMonitorState extends State<ActivityMonitor> {
 
+  BluetoothManager get _ble => widget.bluetoothManager;
+
+  // Screen-local copy of fall alerts (mirrors the manager's list for display).
+  List<String> _localFallAlerts = [];
+
+  // Stream subscription for incoming BLE data messages.
+  StreamSubscription<String>? _dataStreamSub;
+
   List<Color> gradientColors = [
     Colors.cyan,
     Colors.blue
     ,
   ];
 
+  final uid = FirebaseAuth.instance.currentUser!.uid;
+
+  List<FlSpot> graphValues =  [
+    FlSpot(0, 0),
+    FlSpot(1, 0),
+    FlSpot(2, 0),
+    FlSpot(3, 0),
+    FlSpot(4, 0),
+    FlSpot(5, 0),
+    FlSpot(6, 0),
+    FlSpot(7,0),
+    FlSpot(8,0),
+    FlSpot(9,0),
+    FlSpot(10,0),
+
+
+
+  ];
+
 
   @override
   void initState() {
     super.initState();
-    widget.bleSession.addListener(_handleBleMessage);
-  }
+    _ble.addListener(_onBleStateChanged);
 
-  void _handleBleMessage(String message) {
-    setState(() {
-      // update UI
-    });
+    _dataStreamSub = _ble.dataStream.listen(_onDataMessage);
+
+    _ble.requestPermissions();
+
+    _localFallAlerts = List.of(_ble.fallAlerts);
   }
 
   @override
   void dispose() {
-    widget.bleSession.removeListener(_handleBleMessage);
+    _ble.removeListener(_onBleStateChanged);
+    _dataStreamSub?.cancel();
     super.dispose();
+  }
+
+  void _onBleStateChanged() {
+    if (!mounted) return;
+    setState(() {
+      // Sync fall alerts whenever the manager notifies.
+      _localFallAlerts = List.of(_ble.fallAlerts);
+    });
+  }
+
+  void _onDataMessage(String message) {
+    if (!mounted) return;
+
+    message = message.trim();
+
+    if (message.contains("IW")) {
+      print(message);
+
+      // Extract the score number after "INSTABILITY WARNING!"
+      final scoreStr = message.replaceFirst("IW", "").trim();
+      final double? score = double.tryParse(scoreStr);
+
+      if (score != null) {
+        print("Score: $score");
+        setState(() {
+          addNewValue(score);
+        });
+      } else {
+        print("Failed to parse score from: '$scoreStr'");
+      }
+    }
+    if (message == "FALL DETECTED!"){
+      _showFallAlert();
+      userHasFallen();
+      setState(() {});
+    }
+  }
+
+  Future<void> userHasFallen() async {
+    final doc = await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(uid)
+        .get();
+
+    if (!doc.exists) return;
+
+    final data = doc.data() as Map<String, dynamic>?;
+
+    await FirebaseFirestore.instance.collection("Users").doc(uid).update({
+      "alertsToday": (data?["alertsToday"] ?? 0) + 1,
+    });
+  }
+
+
+
+  void addNewValue(double newValue) {
+    if (graphValues.length >= 11) {
+      graphValues.removeAt(0); // remove oldest
+    }
+    if (newValue >= 9){
+      newValue = 9;
+    }
+    //move all the X index by 1
+    for (int i = 0; i < graphValues.length - 1; i ++){
+      FlSpot currFlSpot = graphValues[i];
+      double x_index = currFlSpot.x;
+      double y_index = currFlSpot.y;
+      FlSpot newFlSpot = FlSpot(x_index - 1, y_index);
+      graphValues[i] = newFlSpot;
+    }
+    FlSpot newAddition = FlSpot(10, newValue);
+    graphValues.add(newAddition); // add newest
+  }
+
+  void _showFallAlert() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Colors.red, size: 30),
+            SizedBox(width: 10),
+            Text('FALL DETECTED!'),
+          ],
+        ),
+        content: const Text('A fall has been detected by the sensor.'),
+        backgroundColor: Colors.red[50],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget bottomTitleWidgets(double value, TitleMeta meta) {
@@ -54,12 +180,17 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
       fontSize: 16,
     );
     String text = switch (value.toInt()) {
-      0 => "0",
-      2 => "1",
-      4 => "2",
-      6 => "3",
-      8 => "4",
-      10 => "5",
+      0 => '0',
+      1 => '1',
+      2 => '2',
+      3 => '3',
+      4 => '4',
+      5 => '5',
+      6 => '6',
+      7 => '7',
+      8 => '8',
+      9 => '9',
+      10 => '10',
       _ => '',
     };
     return SideTitleWidget(
@@ -75,9 +206,17 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
     );
     String text = switch (value.toInt()) {
 
+
+      0 => '0',
       1 => '1',
+      2 => '2',
       3 => '3',
+      4 => '4',
       5 => '5',
+      6 => '6',
+      7 => '7',
+      8 => '8',
+      9 => '9',
       _ => '',
     };
 
@@ -145,21 +284,15 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
         border: Border.all(color: const Color(0xff37434d)),
       ),
       minX: 0,
-      maxX: 11,
+      maxX: 10,
       minY: 0,
-      maxY: 6,
+      maxY: 9,
       lineBarsData: [
         LineChartBarData(
-          spots: const [
-            FlSpot(0, 3.44),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
+          spots: graphValues,
           isCurved: true,
+          preventCurveOverShooting: true,
+          preventCurveOvershootingThreshold: 0,
           gradient: LinearGradient(
             colors: [
               ColorTween(begin: gradientColors[0], end: gradientColors[1])
@@ -195,6 +328,8 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
 
   @override
   Widget build(BuildContext context) {
+    final isConnected = _ble.isConnected;
+
     return Scaffold(
       appBar: AppBar(
         leading: SizedBox(
@@ -235,15 +370,33 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
               color: primary_color,
               child: Column(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                  Container(
+                    width: 80,
+                    height: 90,
+                    child: Stack(
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white.withOpacity(0.2),
 
-                    radius: 40,
+                            radius: 40,
 
-                    child: Icon(
-                        Icons.auto_graph,
-                        size: 35,
-                        color: Colors.white,
+                            child: Icon(
+                              Icons.auto_graph,
+                              size: 35,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: CircleAvatar(
+                            backgroundColor: isConnected? Colors.green:Colors.red,
+                            radius: 10,
+                          ),
+                        )
+                      ],
                     ),
                   ),
                   SizedBox(height: 10),
@@ -362,13 +515,17 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
                       SizedBox(height: 15),
                       LinearProgressIndicator(
                         borderRadius: BorderRadius.circular(15),
-                        color: Colors.green,
+                        color: user_fallRisk <= 2?Colors.green:
+                                user_fallRisk <= 4? Colors.yellow:
+                                Colors.red,
                         value: user_fallRisk < 5 ? user_fallRisk * 0.2 : 1.0,
                         minHeight: 10,
                       ),
                       SizedBox(height: 15),
                       Text(
-                        "Based on recent movement patterns, your fall risk is currently low. Continue with normal activities."
+                          user_fallRisk <= 2? "Based on recent movement patterns, your fall risk is currently low. Continue with normal activities.":
+                              user_fallRisk <= 4? "Based on recent movement patterns, your fall risk is currently medium. Please approach with caution":
+                                  "Please stop moving."
                       ),
                     ],
                   ),
