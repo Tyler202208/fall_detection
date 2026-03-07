@@ -40,14 +40,23 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
     ,
   ];
 
+  final uid = FirebaseAuth.instance.currentUser!.uid;
+
   List<FlSpot> graphValues =  [
-    FlSpot(0, 3.44),
-    FlSpot(1.5, 3.44),
-    FlSpot(3, 3.44),
-    FlSpot(4.5, 3.44),
-    FlSpot(6, 3.44),
-    FlSpot(7.5, 3.44),
-    FlSpot(9, 3.44),
+    FlSpot(0, 0),
+    FlSpot(1, 0),
+    FlSpot(2, 0),
+    FlSpot(3, 0),
+    FlSpot(4, 0),
+    FlSpot(5, 0),
+    FlSpot(6, 0),
+    FlSpot(7,0),
+    FlSpot(8,0),
+    FlSpot(9,0),
+    FlSpot(10,0),
+
+
+
   ];
 
 
@@ -81,30 +90,64 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
   void _onDataMessage(String message) {
     if (!mounted) return;
 
-    if (message.contains("INSTABILITY WARNING!")) {
-      print(message);
-      int lastIndex = message.length - 1;
-      double lastValue = double.parse(message[lastIndex]);
+    message = message.trim();
 
-      print(message[lastIndex]);
+    if (message.contains("IW")) {
+      print(message);
+
+      // Extract the score number after "INSTABILITY WARNING!"
+      final scoreStr = message.replaceFirst("IW", "").trim();
+      final double? score = double.tryParse(scoreStr);
+
+      if (score != null) {
+        print("Score: $score");
+        setState(() {
+          addNewValue(score);
+        });
+      } else {
+        print("Failed to parse score from: '$scoreStr'");
+      }
+    }
+    if (message == "FALL DETECTED!"){
       _showFallAlert();
-      //addNewValue(lastValue);
+      userHasFallen();
+      setState(() {});
     }
   }
 
+  Future<void> userHasFallen() async {
+    final doc = await FirebaseFirestore.instance
+        .collection("Users")
+        .doc(uid)
+        .get();
+
+    if (!doc.exists) return;
+
+    final data = doc.data() as Map<String, dynamic>?;
+
+    await FirebaseFirestore.instance.collection("Users").doc(uid).update({
+      "alertsToday": (data?["alertsToday"] ?? 0) + 1,
+    });
+  }
+
+
+
   void addNewValue(double newValue) {
-    if (graphValues.length >= 7) {
+    if (graphValues.length >= 11) {
       graphValues.removeAt(0); // remove oldest
     }
-    //move all the X index by 1.5
+    if (newValue >= 9){
+      newValue = 9;
+    }
+    //move all the X index by 1
     for (int i = 0; i < graphValues.length - 1; i ++){
       FlSpot currFlSpot = graphValues[i];
       double x_index = currFlSpot.x;
       double y_index = currFlSpot.y;
-      FlSpot newFlSpot = FlSpot(x_index - 1.5, y_index);
+      FlSpot newFlSpot = FlSpot(x_index - 1, y_index);
       graphValues[i] = newFlSpot;
     }
-    FlSpot newAddition = FlSpot(9, newValue);
+    FlSpot newAddition = FlSpot(10, newValue);
     graphValues.add(newAddition); // add newest
   }
 
@@ -137,12 +180,17 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
       fontSize: 16,
     );
     String text = switch (value.toInt()) {
-      0 => "0",
-      2 => "1",
-      4 => "2",
-      6 => "3",
-      8 => "4",
-      10 => "5",
+      0 => '0',
+      1 => '1',
+      2 => '2',
+      3 => '3',
+      4 => '4',
+      5 => '5',
+      6 => '6',
+      7 => '7',
+      8 => '8',
+      9 => '9',
+      10 => '10',
       _ => '',
     };
     return SideTitleWidget(
@@ -158,9 +206,17 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
     );
     String text = switch (value.toInt()) {
 
+
+      0 => '0',
       1 => '1',
+      2 => '2',
       3 => '3',
+      4 => '4',
       5 => '5',
+      6 => '6',
+      7 => '7',
+      8 => '8',
+      9 => '9',
       _ => '',
     };
 
@@ -228,13 +284,15 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
         border: Border.all(color: const Color(0xff37434d)),
       ),
       minX: 0,
-      maxX: 11,
+      maxX: 10,
       minY: 0,
-      maxY: 6,
+      maxY: 9,
       lineBarsData: [
         LineChartBarData(
           spots: graphValues,
           isCurved: true,
+          preventCurveOverShooting: true,
+          preventCurveOvershootingThreshold: 0,
           gradient: LinearGradient(
             colors: [
               ColorTween(begin: gradientColors[0], end: gradientColors[1])
@@ -457,13 +515,17 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
                       SizedBox(height: 15),
                       LinearProgressIndicator(
                         borderRadius: BorderRadius.circular(15),
-                        color: Colors.green,
+                        color: user_fallRisk <= 2?Colors.green:
+                                user_fallRisk <= 4? Colors.yellow:
+                                Colors.red,
                         value: user_fallRisk < 5 ? user_fallRisk * 0.2 : 1.0,
                         minHeight: 10,
                       ),
                       SizedBox(height: 15),
                       Text(
-                        "Based on recent movement patterns, your fall risk is currently low. Continue with normal activities."
+                          user_fallRisk <= 2? "Based on recent movement patterns, your fall risk is currently low. Continue with normal activities.":
+                              user_fallRisk <= 4? "Based on recent movement patterns, your fall risk is currently medium. Please approach with caution":
+                                  "Please stop moving."
                       ),
                     ],
                   ),

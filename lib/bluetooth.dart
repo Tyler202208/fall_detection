@@ -190,7 +190,7 @@ class BluetoothManager extends ChangeNotifier {
 
     // Handle fall-detection logic centrally so it works regardless of
     // which screen is currently active.
-    if (message == "INSTABILITY WARNING!") {
+    if (message.contains("INSTABILITY WARNING!")) {
       _fallAlerts.insert(
         0,
         'Received: "$message" at ${DateTime.now()}',
