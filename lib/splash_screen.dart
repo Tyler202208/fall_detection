@@ -11,18 +11,18 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
-  void initState(){
+  void initState() {
     super.initState();
-      _init();
+    _init();
   }
 
-  Future <void> _init() async {
+  Future<void> _init() async {
     await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null){
+    if (user != null) {
       Navigator.pushReplacementNamed(context, "/home");
-    }
-    else {
+    } else {
       Navigator.pushReplacementNamed(context, "/login");
     }
   }
@@ -30,43 +30,56 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: card_color,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Spacer(),
-            Image.asset("assets/fall_detection_logo.png"),
-            SizedBox(
-              width: 213,
-              height: 196,
-              child: Text(
-                textAlign: TextAlign.center,
-                "StrideGuard Fall Prevention",
-                style: TextStyle(
-                  color: primary_color,
-                  fontSize: 40,
-                  fontFamily: "Inter"
+      backgroundColor: surface_color,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(flex: 2),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Image.asset(
+                  "assets/fall_detection_logo.png",
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-            Spacer(),
-            Text(
-              "1.0.0v",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black.withOpacity(0.5)
+              const SizedBox(height: 24),
+              Text(
+                "StrideGuard",
+                style: TextStyle(
+                  color: primary_color,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: "Inter",
+                  letterSpacing: -0.5,
+                ),
               ),
-            ),
-            SizedBox(height: 10)
-          ],
+              const SizedBox(height: 8),
+              Text(
+                "Fall Prevention",
+                style: TextStyle(
+                  color: text_secondary,
+                  fontSize: 16,
+                  fontFamily: "Inter",
+                ),
+              ),
+              const Spacer(flex: 2),
+              Text(
+                "1.0.0",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: text_secondary.withValues(alpha: 0.7),
+                  fontFamily: "Inter",
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
-      )
-
-
-
-
+      ),
     );
   }
 }

@@ -15,55 +15,34 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   final _addressController = TextEditingController();
   final _contactname = TextEditingController();
   final _contactnumber = TextEditingController();
-  String _errorMessage = ""; //TODO: fix this
+  String _errorMessage = "";
   int _page = 0;
-  late final List <Widget> _screens = [_page1(), _page2(), _page3()];
+  late final List<Widget> _screens = [_page1(), _page2(), _page3()];
 
-  bool _validateControllers(){
-    List <TextEditingController> _listControllers = [
-      _ageController, 
-      _addressController,
-      _contactname,
-      _contactnumber
-    ];
-    for(var controller in _listControllers){
-      final text = controller.text.trim();
-      if (text.isEmpty) {
-        return false;
-      }
+  bool _validateControllers() {
+    for (var controller in [_ageController, _addressController, _contactname, _contactnumber]) {
+      if (controller.text.trim().isEmpty) return false;
     }
     return true;
   }
-  
+
   Future<void> _verifyFields() async {
     if (_validateControllers()) {
-
-      // Todo: Save data on firestore database
       final user = FirebaseAuth.instance.currentUser;
-
-        await FirebaseFirestore.instance.collection("Users").doc(user?.uid).update(
-            {
-              // "name": _nameController.text.trim(),
-              // "email": _emailController.text.trim(),
-              // "createdAt": FieldValue.serverTimestamp()
-              "age": _ageController.text.trim(),
-              "address": _addressController.text.trim(),
-              "emergency_contacts": [
-                {
-                  "contact_name": _contactname.text.trim(),
-                  "contact_number": _contactnumber.text.trim()
-                }
-              ]
-            }
-        );
-      Navigator.pushReplacementNamed(context, "/home");
-
-    }
-    else{
-      setState(() {
-        _errorMessage = "Please fill in all fields";
-        print("verify fields");
+      await FirebaseFirestore.instance.collection("Users").doc(user?.uid).update({
+        "age": _ageController.text.trim(),
+        "address": _addressController.text.trim(),
+        "emergency_contacts": [
+          {
+            "contact_name": _contactname.text.trim(),
+            "contact_number": _contactnumber.text.trim(),
+          }
+        ],
       });
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, "/home");
+    } else {
+      setState(() => _errorMessage = "Please fill in all fields.");
     }
   }
 
@@ -78,298 +57,212 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onHorizontalDragEnd: _onHorizontalDrag,
-        child: _screens[_page],
+      backgroundColor: surface_color,
+      body: SafeArea(
+        child: GestureDetector(
+          onHorizontalDragEnd: _onHorizontalDrag,
+          child: _screens[_page],
+        ),
       ),
     );
   }
 
-
-  Widget _page1(){
-    return Scaffold(
-      backgroundColor: primary_color,
-      appBar: AppBar(
-        backgroundColor: primary_color,
-
-      ),
-      body: Column(
+  Widget _page1() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              textAlign: TextAlign.center,
-              "Help us personalize your experience",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30
-              ),
+          const SizedBox(height: 40),
+          Text(
+            "Help us personalize your experience",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: text_primary,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          Spacer(
-            flex: 7,
-          ),
+          const Spacer(flex: 2),
           Text(
             "What is your age?",
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 30
+              color: text_primary,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: 20),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 12),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-                color: card_color,
-                borderRadius: BorderRadius.circular(15)
-            ),
-            child: TextFormField(
-              controller: _ageController,
-              validator: (value) => value != null || value is num ?  null : 'Enter a valid age',
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _ageController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              hintText: "Enter your age",
+              prefixIcon: Icon(Icons.cake_rounded, size: 22),
             ),
           ),
-          SizedBox(height: 20),
-          three_dots(dot1: true),
-          Spacer(
-            flex: 1,
-          )
-
-
-
-
+          const SizedBox(height: 32),
+          _PageDots(current: 0),
+          const Spacer(flex: 1),
         ],
       ),
-
     );
   }
 
-  Widget _page2(){
-    return Scaffold(
-      backgroundColor: primary_color,
-      appBar: AppBar(
-        backgroundColor: primary_color,
-
-      ),
-      body: Column(
+  Widget _page2() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text(
-              textAlign: TextAlign.center,
-              "Help us personalize your experience",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30
-              ),
+          const SizedBox(height: 40),
+          Text(
+            "Help us personalize your experience",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: text_primary,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          Spacer(
-            flex: 7,
-          ),
+          const Spacer(flex: 2),
           Text(
             "What is your address?",
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 30
+              color: text_primary,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(height: 20),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 12),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-                color: card_color,
-                borderRadius: BorderRadius.circular(15)
-            ),
-            child: TextFormField(
-              controller: _addressController,
-              validator: (value) => value != null ? null : 'Enter a valid age',
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _addressController,
+            decoration: const InputDecoration(
+              hintText: "Street, city, state",
+              prefixIcon: Icon(Icons.location_on_rounded, size: 22),
             ),
           ),
-          SizedBox(height: 20),
-          three_dots(dot2: true),
-          Spacer(
-            flex: 1,
-          )
-
-
-
-
+          const SizedBox(height: 32),
+          _PageDots(current: 1),
+          const Spacer(flex: 1),
         ],
       ),
-
     );
   }
 
-  Widget _page3(){
-    return Scaffold(
-      backgroundColor: primary_color,
-      appBar: AppBar(
-        backgroundColor: primary_color,
-
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                textAlign: TextAlign.center,
-                "Provide your emergency contacts",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30
-                ),
-              ),
+  Widget _page3() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 40),
+          Text(
+            "Provide your emergency contact",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: text_primary,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
             ),
-            SizedBox(height: 20),
-        
-            Text(
-              "Contact Full Name",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30
-              ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            "Contact name",
+            style: TextStyle(
+              color: text_secondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
-            SizedBox(height: 20),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _contactname,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              hintText: "Full name",
+              prefixIcon: Icon(Icons.person_rounded, size: 22),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "Phone number",
+            style: TextStyle(
+              color: text_secondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _contactnumber,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              hintText: "Phone number",
+              prefixIcon: Icon(Icons.phone_rounded, size: 22),
+            ),
+          ),
+          if (_errorMessage.isNotEmpty) ...[
+            const SizedBox(height: 16),
             Container(
-              margin: EdgeInsets.symmetric(horizontal: 12),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                  color: card_color,
-                  borderRadius: BorderRadius.circular(15)
+                color: error_color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(input_radius),
               ),
-              child: TextFormField(
-                controller: _contactname,
-                validator: (value) => value != null ? null : 'Enter a valid name',
-              ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              "Contact Phone Number",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 30
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: error_color, size: 20),
+                  const SizedBox(width: 12),
+                  Text(_errorMessage, style: TextStyle(color: error_color, fontSize: 14)),
+                ],
               ),
             ),
-            SizedBox(height: 20),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 12),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                  color: card_color,
-                  borderRadius: BorderRadius.circular(15)
-              ),
-              child: TextFormField(
-                controller: _contactnumber,
-                validator: (value) => value != null  ? null : 'Enter a valid number',
-              ),
-            ),
-            SizedBox(height: 30),
-            GestureDetector(
-              onTap: _verifyFields,
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: primary_color,
-                    borderRadius: BorderRadius.circular(15)
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Text(
-                        "Submit",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold
-        
-                        ),
-                    ),
-                  ),
-                ),
-        
-              ),
-            ),
-            SizedBox(height: 30),
-            if (_errorMessage.isNotEmpty)...[
-              Text(
-                _errorMessage,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30
-                ),
-              ),
-            ],
-            SizedBox(height: 50),
-            three_dots(dot3: true),
-            SizedBox(height: 20),
-        
-        
-        
-        
           ],
-        ),
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 52,
+            child: FilledButton(
+              onPressed: _verifyFields,
+              style: FilledButton.styleFrom(
+                backgroundColor: primary_color,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(button_radius)),
+              ),
+              child: const Text("Continue"),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _PageDots(current: 2),
+          const SizedBox(height: 40),
+        ],
       ),
-
     );
   }
 }
 
-class three_dots extends StatelessWidget {
-  bool dot1;
-  bool dot2;
-  bool dot3;
-  three_dots({super.key, this.dot1 = false, this.dot2 = false, this.dot3 = false});
+class _PageDots extends StatelessWidget {
+  final int current;
+
+  const _PageDots({required this.current});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 60),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-            height: 25,
-            width: 25,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: dot1?
-                    Colors.white:
-                    Colors.white.withOpacity(0.2)
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(3, (i) {
+        final isActive = i == current;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: isActive ? primary_color : text_secondary.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(4),
           ),
-          Container(
-            height: 25,
-            width: 25,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: dot2?
-                Colors.white:
-                Colors.white.withOpacity(0.2)
-            ),
-          ),
-          Container(
-            height: 25,
-            width: 25,
-            decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: dot3?
-                Colors.white:
-                Colors.white.withOpacity(0.2)
-            ),
-          )
-        ],
-      ),
+        );
+      }),
     );
   }
 }
-

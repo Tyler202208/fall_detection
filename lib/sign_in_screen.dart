@@ -19,167 +19,202 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isloading = false;
   String? _error;
 
-
   Future<void> _submit() async {
-    if(_formKey.currentState?.validate() ?? false){
+    if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isloading = true;
         _error = null;
       });
 
       try {
-        // Todo: Connect to firebase authentication and make new acc
         final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-            email: _emailController.text.trim(),
-            password: _passwordController.text.trim(),
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
         );
 
-        // Todo: Save data on firestore database
         final user = credential.user;
-        if(user != null && _nameController.text.trim().isNotEmpty){
-          await FirebaseFirestore.instance.collection("Users").doc(user.uid).set(
-            {
-              "name": _nameController.text.trim(),
-              "email": _emailController.text.trim(),
-              "createdAt": FieldValue.serverTimestamp(),
-              "totalAlerts": 0,
-              "alertsToday": 0,
-              "profileImageUrl": "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRl"
-                  "L3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png"
-            }
-          );
+        if (user != null && _nameController.text.trim().isNotEmpty) {
+          await FirebaseFirestore.instance.collection("Users").doc(user.uid).set({
+            "name": _nameController.text.trim(),
+            "email": _emailController.text.trim(),
+            "createdAt": FieldValue.serverTimestamp(),
+            "totalAlerts": 0,
+            "alertsToday": 0,
+            "profileImageUrl":
+                "https://images.rawpixel.com/image_png_800/czNmcy1wcml2YXRl"
+                "L3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjkzNy1hZXctMTY1LnBuZw.png",
+          });
         }
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, "/personal_info");
-      }
-      catch(e){
+      } catch (e) {
         setState(() {
-          _error = "Signup failed";
+          _error = "Sign up failed. Please try again.";
         });
-      }
-      finally {
-        setState(() {
-          _isloading = false;
-        });
+      } finally {
+        if (mounted) setState(() => _isloading = false);
       }
     }
   }
 
   @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPassword.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Image.asset('assets/fall_detection_logo.png'),
-              Text(
-                  "StrideGuard",
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: ""
-                  )
-              ),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 12),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                    color: card_color,
-                    borderRadius: BorderRadius.circular(15)
-                ),
-                child: TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: "Name"),
-                  validator: (value) => value == null || value.isEmpty ? 'Enter a valid name' : null,
-                ),
-              ),
-              SizedBox(height: 16),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 12),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                    color: card_color,
-                    borderRadius: BorderRadius.circular(15)
-                ),
-                child: TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(labelText: "Email"),
-                  validator: (value) => value == null || !value.contains("@") ? 'Enter a valid email' : null,
-                ),
-              ),
-
-              SizedBox(height: 16),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 12),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                    color: card_color,
-                    borderRadius: BorderRadius.circular(15)
-                ),
-                child: TextFormField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(labelText: "Password"),
-                  validator: (value) => value == null || value.length < 5 ? 'Enter a 5+ character password' : null,
-                  obscureText: true,
-                ),
-              ),
-              SizedBox(height: 16),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 12),
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                    color: card_color,
-                    borderRadius: BorderRadius.circular(15)
-                ),
-                child: TextFormField(
-                  controller: _confirmPassword,
-                  decoration: const InputDecoration(labelText: "Confirm Password"),
-                  validator: (value) => value == null || value != _passwordController.text ? 'Password do not match' : null,
-                  obscureText: true,
-                ),
-              ),
-              SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                    onPressed: _isloading ? null : _submit,
-                    child: _isloading ? CircularProgressIndicator() : Text(
-                      "Sign up",
-                      style: TextStyle(
-                        color: primary_color,
-                        fontSize: 20
-                      ),
-                    ),
-                ),
-              ),
-              TextButton(
-                  onPressed: (){
-                    Navigator.pushReplacementNamed(context, '/login');
-                  },
-                  child: Text(
-                    "Click Here to Return to Login",
-                    style: TextStyle(
-                      color: primary_color,
-                      fontSize: 16
-                    ),
-                  )
-              ),
-              if(_error != null) ...[
+      backgroundColor: surface_color,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: text_primary,
+        title: const Text("Create account"),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 8),
                 Text(
-                  _error!,
+                  "Name",
                   style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 20
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: text_secondary,
                   ),
                 ),
-                SizedBox(height: 16)
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _nameController,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: const InputDecoration(
+                    hintText: "Your name",
+                    prefixIcon: Icon(Icons.person_outline, size: 22),
+                  ),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Enter your name' : null,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Email",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: text_secondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    hintText: "you@example.com",
+                    prefixIcon: Icon(Icons.email_outlined, size: 22),
+                  ),
+                  validator: (value) =>
+                      value == null || !value.contains("@") ? 'Enter a valid email' : null,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Password",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: text_secondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    hintText: "At least 5 characters",
+                    prefixIcon: Icon(Icons.lock_outline, size: 22),
+                  ),
+                  validator: (value) =>
+                      value == null || value.length < 5 ? 'Use at least 5 characters' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmPassword,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    hintText: "Confirm password",
+                    prefixIcon: Icon(Icons.lock_outline, size: 22),
+                  ),
+                  validator: (value) =>
+                      value == null || value != _passwordController.text ? 'Passwords do not match' : null,
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: error_color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(input_radius),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: error_color, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: TextStyle(color: error_color, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 28),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _isloading ? null : _submit,
+                    child: _isloading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text("Sign up"),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Already have an account? ",
+                      style: TextStyle(color: text_secondary, fontSize: 15),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: primary_color,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      child: const Text("Log in"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
               ],
-            ],
+            ),
           ),
         ),
-      )
+      ),
     );
   }
 }

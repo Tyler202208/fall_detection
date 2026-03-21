@@ -18,124 +18,165 @@ class _LogInScreenState extends State<LogInScreen> {
   bool _isloading = false;
   String? _error;
 
-
   Future<void> _submit() async {
-    if(_formKey.currentState?.validate() ?? false){
+    if (_formKey.currentState?.validate() ?? false) {
       setState(() {
         _isloading = true;
         _error = null;
       });
 
       try {
-        // Todo: Connect to firebase authentication and make new acc
-        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        if (!mounted) return;
         Navigator.pushReplacementNamed(context, "/home");
-      }
-      catch(e){
+      } catch (e) {
         setState(() {
-          _error = "Signup failed";
+          _error = "Invalid email or password. Please try again.";
         });
-      }
-      finally {
-        setState(() {
-          _isloading = false;
-        });
+      } finally {
+        if (mounted) setState(() => _isloading = false);
       }
     }
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      appBar: AppBar(),
-      body: SingleChildScrollView(
+    return Scaffold(
+      backgroundColor: surface_color,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
-              key: _formKey,
-              child: Column(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 48),
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      'assets/fall_detection_logo.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "Welcome back",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: text_primary,
+                    fontFamily: "Inter",
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Sign in to continue to StrideGuard",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: text_secondary,
+                    fontFamily: "Inter",
+                  ),
+                ),
+                const SizedBox(height: 32),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                    hintText: "you@example.com",
+                    prefixIcon: Icon(Icons.email_outlined, size: 22),
+                  ),
+                  validator: (value) =>
+                      value == null || !value.contains("@") ? 'Enter a valid email' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                    hintText: "••••••••",
+                    prefixIcon: Icon(Icons.lock_outline, size: 22),
+                  ),
+                  validator: (value) =>
+                      value == null || value.length < 5 ? 'Enter at least 5 characters' : null,
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: error_color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(input_radius),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: error_color, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: TextStyle(color: error_color, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _isloading ? null : _submit,
+                    child: _isloading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Text("Log in"),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset('assets/fall_detection_logo.png'),
                     Text(
-                      "StrideGuard",
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: ""
-                      )
-
+                      "Don't have an account? ",
+                      style: TextStyle(color: text_secondary, fontSize: 15),
                     ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 12),
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                          color: card_color,
-                          borderRadius: BorderRadius.circular(15)
-                      ),
-                      child: TextFormField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(labelText: "Email"),
-                        validator: (value) => value == null || !value.contains("@") ? 'Enter a valid email' : null,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 12),
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                          color: card_color,
-                          borderRadius: BorderRadius.circular(15)
-                      ),
-                      child: TextFormField(
-                        controller: _passwordController,
-                        decoration: const InputDecoration(labelText: "Password"),
-                        validator: (value) => value == null || value.length < 5 ? 'Enter a 5+ character password' : null,
-                        obscureText: true,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isloading ? null : _submit,
-                        child: _isloading ? CircularProgressIndicator() : Text(
-                            "Log In",
-                          style: TextStyle(
-                            color: primary_color,
-                            fontSize: 20
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16),
                     TextButton(
-                        onPressed: (){
-                          Navigator.pushReplacementNamed(context, '/signup');
-                        },
-                        child: Text(
-                          "Click Here to Create an Account",
-                          style: TextStyle(
-                            color: primary_color,
-                            fontSize: 16
-                          ),
-                        )
-                    ),
-                    if(_error != null) ...[
-                      Text(
-                        _error!,
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 20
-                        ),
-
+                      onPressed: () => Navigator.pushReplacementNamed(context, '/signup'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: primary_color,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
-                      SizedBox(height: 16)
-                    ],
-                  ]
-              )
-          )
-      )
+                      child: const Text("Sign up"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
