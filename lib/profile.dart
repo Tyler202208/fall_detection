@@ -66,36 +66,43 @@ class _ProfileState extends State<Profile> {
   }
   
   Future<void> logout_and_delete() async {
-    final action = await showModalBottomSheet <String> (
+    final action = await showModalBottomSheet<String>(
         context: context,
-        builder: (context) => SafeArea(
+        backgroundColor: Colors.transparent,
+        builder: (context) => Container(
+          decoration: BoxDecoration(
+            color: card_elevated,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ListTile(
-                  leading: Icon(Icons.logout),
-                  title: Text(
-                    "Logout"
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: text_secondary.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
                   ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: Icon(Icons.logout_rounded, color: primary_color),
+                  title: const Text("Log out"),
                   onTap: () => Navigator.pop(context, 'Logout'),
                 ),
                 ListTile(
-                  leading: Icon(
-                    Icons.delete,
-                    color: Colors.red
-                  ),
-                  title: Text(
-                    "Delete Account",
-                    style: TextStyle(
-                      color: Colors.red
-                    ),
-                  ),
+                  leading: Icon(Icons.delete_outline_rounded, color: error_color),
+                  title: Text("Delete account", style: TextStyle(color: error_color, fontWeight: FontWeight.w500)),
                   onTap: () => Navigator.pop(context, 'Delete Account'),
-                )
-              ]
-            )
-        )
-    );
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ));
     if (action == "Logout"){
       await FirebaseAuth.instance.signOut();
       if (mounted) Navigator.pushReplacementNamed(context, '/login');
@@ -210,34 +217,16 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     return Scaffold(
+      backgroundColor: surface_color,
       appBar: AppBar(
-          leading: SizedBox(
-            width: 15,
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            onPressed: logout_and_delete,
+            icon: const Icon(Icons.more_vert_rounded),
           ),
-          title: Center(
-              child: const
-              Text(
-                  'Profile',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold
-
-                  )
-              )
-          ),
-          backgroundColor: primary_color,
-
-          actions: [
-            IconButton(
-                onPressed: logout_and_delete,
-                icon: Icon(
-                  Icons.settings,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                )
-            ),
-          ],
-        ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: StreamBuilder <DocumentSnapshot>(
             stream: FirebaseFirestore.instance.collection("Users").doc(uid).snapshots(),
@@ -296,251 +285,264 @@ class _ProfileState extends State<Profile> {
                 children: [
                   Container(
                     width: double.infinity,
-                    color: primary_color,
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [primary_color, primary_dark],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primary_color.withValues(alpha: 0.25),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Column(
                       children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          child: GestureDetector(
-                            onTap: _pickImage,
-                            child: Stack(
-                              children: [
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.white.withOpacity(0.2),
-                                    backgroundImage: NetworkImage(user_profilePic),
-                                    radius: 40,
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                                backgroundImage: NetworkImage(user_profilePic),
+                                radius: 44,
+                              ),
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: primary_dark,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
                                   ),
+                                  child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 18),
                                 ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Icon(
-                                    Icons.upload,
-                                    color: Colors.white,
-                                    size: 30,
-
-                                  ),
-                                )
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 14),
                         Text(
                           user_name,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 25
-
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 22,
                           ),
-
                         ),
+                        const SizedBox(height: 4),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                                "Age $user_age",
-                                style: textcard_color
+                            Text("Age $user_age", style: textcard_color),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 4,
+                              height: 4,
+                              decoration: const BoxDecoration(
+                                color: Colors.white54,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                            SizedBox(width: 10),
-                            CircleAvatar(
-                              backgroundColor: Colors.white,
-                              radius: 2,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                                "Fall Detection User",
-                                style: textcard_color
-                            )
+                            const SizedBox(width: 8),
+                            Text("StrideGuard user", style: textcard_color),
                           ],
                         ),
-                        SizedBox(height: 10),
-                        ifEditing?
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Spacer(flex:3),
-                            ElevatedButton(
+                        const SizedBox(height: 16),
+                        if (ifEditing)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              OutlinedButton(
+                                onPressed: () => setState(() => ifEditing = false),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: const BorderSide(color: Colors.white70),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(button_radius)),
+                                ),
+                                child: const Text("Cancel"),
+                              ),
+                              const SizedBox(width: 12),
+                              FilledButton(
                                 onPressed: updateProfile,
-                                child: Text("Save")
-                            ),
-                            Spacer(flex:1),
-                            ElevatedButton(
-                                onPressed: (){
-                                  setState(() {
-                                    ifEditing = false;
-                                  });
-                                },
-                                child: Text("Cancel")
-                            ),
-                            Spacer(flex:3)
-                          ],
-                        )
-                        :ElevatedButton(
-                            onPressed: (){
-                              setState(() {
-                                ifEditing = true;
-                              });
-                            },
-                            child: Text("Edit Profile")
-                        ),
-                        SizedBox(height: 10),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: primary_color,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(button_radius)),
+                                ),
+                                child: const Text("Save"),
+                              ),
+                            ],
+                          )
+                        else
+                          TextButton.icon(
+                            onPressed: () => setState(() => ifEditing = true),
+                            icon: const Icon(Icons.edit_rounded, size: 18, color: Colors.white),
+                            label: const Text("Edit profile", style: TextStyle(color: Colors.white)),
+                          ),
+                        const SizedBox(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Number_word(
                                 number: user_emergencyContacts.length.toString(),
-                                //number: "",
                                 text: "Emergency",
-                                optional_text: "Contacts"
-                            ),
-                            Number_word(
-                                number: "24/7",
-                                text: "Monitoring"
-                            ),
+                                optional_text: "Contacts"),
+                            Number_word(number: "24/7", text: "Monitoring"),
                             Number_word(
                                 number: user_fallsDetected.toString(),
                                 text: "Falls",
-                                optional_text: "Detected"
+                                optional_text: "Detected"),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                    child: Text(
+                      "Personal information",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: text_primary,
+                      ),
+                    ),
+                  ),
+                  if (ifEditing)
+                    Form(
+                      key: _formKey,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: card_elevated,
+                          borderRadius: BorderRadius.circular(card_radius),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                        SizedBox(height: 20),
-
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
-                          child: Text(
-                            "Personal Information",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: updateNameController,
+                              decoration: const InputDecoration(labelText: "Name"),
+                              validator: (value) => value == null || value.isEmpty ? 'Enter your name' : null,
                             ),
-                          ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: updateAgeController,
+                              decoration: const InputDecoration(labelText: "Age"),
+                              validator: (value) => value == null || value.isEmpty ? 'Enter your age' : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: updateAddressController,
+                              decoration: const InputDecoration(labelText: "Address"),
+                              validator: (value) => value == null ? 'Enter your address' : null,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                  ifEditing?
-                  Form(
-                    key: _formKey,
-                    child: Container(
-                      width: double.infinity,
-                      margin: EdgeInsets.symmetric(horizontal: 30),
+                      ),
+                    )
+                  else
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
-                        color: card_color,
-                        borderRadius: BorderRadius.circular(20)
-
-                    ),
+                        color: card_elevated,
+                        borderRadius: BorderRadius.circular(card_radius),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                       child: Column(
                         children: [
-                          Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.symmetric(horizontal: 30),
-                            child: TextFormField(
-                                controller: updateNameController,
-                                decoration: const InputDecoration(labelText: "Enter Your Name"),
-                                validator: (value) => value == null || value.isEmpty ? 'Enter a valid name' : null
+                          ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: primary_color.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.person_rounded, color: primary_color, size: 22),
                             ),
+                            title: Text('Name', style: TextStyle(fontSize: 13, color: text_secondary)),
+                            subtitle: Text(user_name, style: const TextStyle(fontWeight: FontWeight.w500)),
                           ),
-                          Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.symmetric(horizontal: 30),
-                            child: TextFormField(
-                                controller: updateAgeController,
-                                decoration: const InputDecoration(labelText: "Enter Your Age"),
-                                validator: (value) => value == null || value is num ? 'Enter a valid age' : null
+                          ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: success_color.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.cake_rounded, color: success_color, size: 22),
                             ),
+                            title: Text('Age', style: TextStyle(fontSize: 13, color: text_secondary)),
+                            subtitle: Text('$user_age years', style: const TextStyle(fontWeight: FontWeight.w500)),
                           ),
-                          Container(
-                            width: double.infinity,
-                            padding: EdgeInsets.symmetric(horizontal: 30),
-                            child: TextFormField(
-                                controller: updateAddressController,
-                                decoration: const InputDecoration(labelText: "Enter Your Address"),
-                                validator: (value) => value == null ? 'Enter a valid name' : null
+                          ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: primary_dark.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.location_on_rounded, color: primary_dark, size: 22),
                             ),
-                          )
+                            title: Text('Address', style: TextStyle(fontSize: 13, color: text_secondary)),
+                            subtitle: Text(user_address.toString(), style: const TextStyle(fontWeight: FontWeight.w500)),
+                          ),
                         ],
                       ),
                     ),
-                  )
-                  :Container(
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.grey.withOpacity(0.3),
-                            radius: 30,
-                            child: Icon(
-                              Icons.person,
-                              size: 30,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          title: Text('Name'),
-                          subtitle: Text(user_name),
-                        ),
-                        ListTile(
-                          leading:  CircleAvatar(
-                            backgroundColor: Colors.grey.withOpacity(0.3),
-                            radius: 30,
-                            child: Icon(
-                              Icons.cake,
-                              size: 30,
-                              color: Colors.green,
-                            ),
-                          ),
-                          title: Text('Age'),
-                          subtitle: Text('$user_age years old'),
-                        ),
-                        ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.grey.withOpacity(0.3),
-                            radius: 30,
-                            child: Icon(
-                              Icons.location_on,
-                              size: 30,
-                              color: Colors.purple,
-                            ),
-                          ),
-                          title: Text('Address'),
-                          subtitle: Text(user_address.toString()),
-                        ),
-                      ],
-                    )
-                  ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
                     child: Text(
-                        "Emergency Contacts",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold
-                        ),
+                      "Emergency contacts",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: text_primary,
+                      ),
                     ),
                   ),
                   ...user_emergencyContacts.map(
-                      (item) =>  Card(
-                        color: card_color,
-                        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                        child: ListTile(
-                            title: Text(item["contact_name"]),
-                            subtitle: Text(item["contact_number"]),
-
-                        ),
+                    (item) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: card_elevated,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
+                      child: ListTile(
+                        leading: Icon(Icons.contact_phone_rounded, color: primary_color),
+                        title: Text(item["contact_name"], style: const TextStyle(fontWeight: FontWeight.w500)),
+                        subtitle: Text(item["contact_number"], style: TextStyle(color: text_secondary, fontSize: 14)),
+                      ),
+                    ),
                   ).toList()
 
 

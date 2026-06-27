@@ -35,9 +35,8 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
   StreamSubscription<String>? _dataStreamSub;
 
   List<Color> gradientColors = [
-    Colors.cyan,
-    Colors.blue
-    ,
+    primary_color,
+    primary_dark,
   ];
 
   final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -155,19 +154,27 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
           children: [
-            Icon(Icons.warning, color: Colors.red, size: 30),
-            SizedBox(width: 10),
-            Text('FALL DETECTED!'),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: error_color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.warning_amber_rounded, color: error_color, size: 28),
+            ),
+            const SizedBox(width: 12),
+            const Text('Fall detected'),
           ],
         ),
         content: const Text('A fall has been detected by the sensor.'),
-        backgroundColor: Colors.red[50],
+        backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('OK'),
+            child: Text("OK", style: TextStyle(color: primary_color, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -232,14 +239,14 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
         verticalInterval: 1,
         horizontalInterval: 1,
         getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Color(0xff37434d),
+          return FlLine(
+            color: text_secondary.withValues(alpha: 0.25),
             strokeWidth: 1,
           );
         },
         getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Color(0xff37434d),
+          return FlLine(
+            color: text_secondary.withValues(alpha: 0.25),
             strokeWidth: 1,
           );
         },
@@ -281,7 +288,7 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border.all(color: const Color(0xff37434d)),
+        border: Border.all(color: text_secondary.withValues(alpha: 0.2)),
       ),
       minX: 0,
       maxX: 10,
@@ -331,237 +338,206 @@ class _ActivityMonitorState extends State<ActivityMonitor> {
     final isConnected = _ble.isConnected;
 
     return Scaffold(
-      appBar: AppBar(
-        leading: SizedBox(
-          width: 15,
-        ),
-        title: Center(
-            child: const
-            Text(
-                'Activity Monitor',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold
-                )
-            )
-        ),
-        backgroundColor: primary_color,
-
-        actions: [
-          IconButton(
-              onPressed: (){
-                setState(() {
-                });
-              },
-              icon: Icon(
-                  Icons.refresh,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-              )
-          ),
-
-        ],
-
-      ),
-      body: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              color: primary_color,
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 90,
-                    child: Stack(
+      backgroundColor: surface_color,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Align(
-                          alignment: Alignment.center,
-                          child: CircleAvatar(
-                            backgroundColor: Colors.white.withOpacity(0.2),
-
-                            radius: 40,
-
-                            child: Icon(
-                              Icons.auto_graph,
-                              size: 35,
-                              color: Colors.white,
-                            ),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: primary_color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: Icon(Icons.show_chart_rounded, color: primary_color, size: 28),
                         ),
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: CircleAvatar(
-                            backgroundColor: isConnected? Colors.green:Colors.red,
-                            radius: 10,
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Real-Time Monitoring",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20
-
-                    ),
-
-                  ),
-                  Text(
-                    "Tracking movement and fall risk",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20
-                    ),
-                  ),
-                  SizedBox(height: 20,)
-                ],
-              ),
-            ),
-            StreamBuilder <DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection("Users").doc(user!.uid).snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting){
-                  return Center(
-                      child: CircularProgressIndicator()
-                  );
-                }
-                else if (snapshot.hasError){
-                  return Center(child: Text("Failed to Connect to Firebase"));
-                }
-
-                final user_data;
-                var user_fallRisk;
-
-                try{
-                  user_data = snapshot.data!.data() as Map<String, dynamic>;
-                  user_fallRisk = user_data["alertsToday"];
-                }
-                catch (e){
-                  user_fallRisk = "0";
-                }
-
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 30),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    color: Colors.grey[200],
-
-                  ),
-
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                              "Fall Risk Assessment",
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold
-                            ),
-
-                          ),
-                          Spacer(),
-                          Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              color: Colors.lightGreen.withOpacity(0.2),
-                            ),
-                            child: Container(
-                              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                              child: Text(
-                                user_fallRisk <= 2? "Low Risk":
-                                user_fallRisk <= 4? "Medium Risk":
-                                "High Risk",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: Colors.red
-                                ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Activity monitor",
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: text_primary,
                               ),
                             ),
-                          ),
-                        ],
-
-                        ),
-                      SizedBox(height: 15),
-                      Row(
-                        children: [
-                          Text(
-                            "Current Risk Level"
-                          ),
-                          Spacer(),
-
-                          CircleAvatar(
-                            backgroundColor: Colors.green.withOpacity(0.9),
-                            radius: 6,
-                          ),
-                          SizedBox(width: 7),
-                          Text(
-                            user_fallRisk <= 2? "Low":
-                            user_fallRisk <= 4? "Medium":
-                            "High",
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontWeight: FontWeight.bold
+                            Text(
+                              "Real-time movement & fall risk",
+                              style: TextStyle(fontSize: 14, color: text_secondary),
                             ),
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 15),
-                      LinearProgressIndicator(
-                        borderRadius: BorderRadius.circular(15),
-                        color: user_fallRisk <= 2?Colors.green:
-                                user_fallRisk <= 4? Colors.yellow:
-                                Colors.red,
-                        value: user_fallRisk < 5 ? user_fallRisk * 0.2 : 1.0,
-                        minHeight: 10,
-                      ),
-                      SizedBox(height: 15),
-                      Text(
-                          user_fallRisk <= 2? "Based on recent movement patterns, your fall risk is currently low. Continue with normal activities.":
-                              user_fallRisk <= 4? "Based on recent movement patterns, your fall risk is currently medium. Please approach with caution":
-                                  "Please stop moving."
-                      ),
-                    ],
-                  ),
-                );
-              }
-            ),
-            Text(
-              textAlign: TextAlign.center,
-              "Monitor Data",
-              style: TextStyle(
-                fontSize: 20,
+                          ],
+                        ),
+                        const Spacer(),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: isConnected ? success_color : error_color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
-            Stack(
-              children: <Widget>[
-                AspectRatio(
-                  aspectRatio: 1.70,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      right: 18,
-                      left: 12,
-                      top: 24,
-                      bottom: 12,
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance.collection("Users").doc(user!.uid).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Center(child: CircularProgressIndicator()),
                     ),
-                    child: LineChart(
-                      avgData(),
+                  );
+                }
+                if (snapshot.hasError) {
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(child: Text("Failed to load data", style: TextStyle(color: text_secondary))),
+                    ),
+                  );
+                }
+                var user_fallRisk = 0;
+                try {
+                  final data = snapshot.data!.data() as Map<String, dynamic>?;
+                  user_fallRisk = data?["alertsToday"] ?? 0;
+                } catch (_) {}
+
+                final riskLabel = user_fallRisk <= 2 ? "Low" : user_fallRisk <= 4 ? "Medium" : "High";
+                final riskColor = user_fallRisk <= 2 ? success_color : user_fallRisk <= 4 ? warning_color : error_color;
+
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: card_elevated,
+                        borderRadius: BorderRadius.circular(card_radius),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                "Fall risk",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: text_primary,
+                                ),
+                              ),
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: riskColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  riskLabel,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                    color: riskColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: LinearProgressIndicator(
+                              value: user_fallRisk < 5 ? user_fallRisk * 0.2 : 1.0,
+                              minHeight: 8,
+                              backgroundColor: card_color,
+                              valueColor: AlwaysStoppedAnimation<Color>(riskColor),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            user_fallRisk <= 2
+                                ? "Your fall risk is currently low. Continue with normal activities."
+                                : user_fallRisk <= 4
+                                    ? "Medium risk. Please move with caution."
+                                    : "High risk. Please stop and get help if needed.",
+                            style: TextStyle(fontSize: 14, color: text_secondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  "Instability over time",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: text_primary,
+                  ),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            SliverToBoxAdapter(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: card_elevated,
+                  borderRadius: BorderRadius.circular(card_radius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(card_radius),
+                  child: AspectRatio(
+                    aspectRatio: 1.70,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16, left: 8, top: 16, bottom: 8),
+                      child: LineChart(avgData()),
                     ),
                   ),
                 ),
-              ],
-            )
-
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
-      )
-      ,
-
+        ),
+      ),
     );
   }
 }
