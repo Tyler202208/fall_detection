@@ -70,7 +70,7 @@ class _LogInScreenState extends State<LogInScreen> {
                       'assets/fall_detection_logo.png',
                       width: 80,
                       height: 80,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),

@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   "assets/fall_detection_logo.png",
                   width: 120,
                   height: 120,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(height: 24),
